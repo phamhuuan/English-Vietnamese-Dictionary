@@ -1,0 +1,1 @@
+gcc -o main -Wall main.c $(pkg-config allegro-5 allegro_font-5 allegro_audio-5 allegro_acodec-5 --libs --cflags) `pkg-config --cflags --libs gtk+-3.0` libbt.a libfdr.a
