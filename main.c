@@ -140,13 +140,13 @@ int main(int argc, char *argv[]){
 	gtk_widget_set_size_request(button8, 240, 50);
 	g_signal_connect_swapped(button8, "clicked", G_CALLBACK(gtk_widget_destroy), window);
 
-	// ALLEGRO_SAMPLE *sample=NULL;	
-	// al_install_audio();
-	// al_init_acodec_addon();
-	// al_reserve_samples(1);
-	// sample = al_load_sample("Img/Orange-7-Shigatsu-wa-kimi-no-uso.wav" );
-	// al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
-	// al_rest(0.0);
+	ALLEGRO_SAMPLE *sample=NULL;	
+	al_install_audio();
+	al_init_acodec_addon();
+	al_reserve_samples(1);
+	sample = al_load_sample("Img/Orange-7-Shigatsu-wa-kimi-no-uso.wav" );
+	al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+	al_rest(0.0);
 
 	GtkWidget *data1[1];
 	data1[0] = window;
