@@ -36,6 +36,7 @@
 
 #textView{
     background: #ffe6e6;
+    border-radius: 5px;
 }
 
 #view1,
@@ -85,8 +86,8 @@
 }
 
 #button1{
-    background: transparent;
-    /* background: #e6ffff; */
+    /* background: transparent; */
+    background: #ffffcc;
     color: black;
     opacity: 0.8;
     font-family: 'Times New Roman', Times, serif;
@@ -97,7 +98,8 @@
 }
 
 #button2{
-    background: transparent;
+    /* background: transparent; */
+    background: #ffffcc;
     /* background: #e6ffff; */
     color: black;
     opacity: 0.8;

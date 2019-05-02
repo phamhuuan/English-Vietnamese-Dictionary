@@ -1,6 +1,6 @@
 # English-Vietnamese-Dictionary
 
-I. Author: Pham Huu An
+I. Author: Pham Huu An & Doan Ngoc Chien
 
 II. function:
 1 Search Word

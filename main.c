@@ -962,7 +962,9 @@ void addToLibrary(GtkWidget *w, gpointer data){
 	char word[50];
 	strcpy(word,a);
 
-	if(bfndky(libraryTree, word, NULL) != 0){
+	BTint x;
+
+	if(bfndky(libraryTree, word, &x) != 0){
 		binsky(libraryTree, word, 0);
 		Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Added!");
 	}
@@ -1033,6 +1035,7 @@ void searchWord(GtkWidget widget, gpointer window){
 
 	textView = gtk_text_view_new();
 	gtk_container_add(GTK_CONTAINER(scrolling), textView);
+	gtk_widget_set_name(textView, "textView");
 
 	button2 = gtk_button_new_with_label("Back");
 	gtk_widget_set_name(button2, "buttonBack");
@@ -1101,11 +1104,11 @@ static void add(GtkWidget *w, gpointer data){
 	strcpy(mean,b);
 	printf("\n");
 
-	// char* x = NULL;
+	BTint x;
 
 	if(word[0] == '\0' || mean[0] == '\0')
 		Message(GTK_WIDGET(data), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
-	else if(bfndky(dictionary, word, NULL) == 0)
+	else if(bfndky(dictionary, word, &x) == 0)
 		Message(GTK_WIDGET(data), GTK_MESSAGE_ERROR, "Error!", "Word already in dictionary!");
 	else{
 		if(btins(dictionary,word, mean,10000))
@@ -1146,7 +1149,7 @@ void addWord(GtkWidget widget, gpointer window){
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window1), "Add word");
-	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 400);
+	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 450);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
 
 	myCSS();
@@ -1224,7 +1227,7 @@ void deleteWord(GtkWidget widget, gpointer window){
 
 	entry = gtk_entry_new();
 	gtk_widget_set_name(entry, "entry");
-	gtk_fixed_put(GTK_FIXED(fixed), entry_search, 100, 25);
+	gtk_fixed_put(GTK_FIXED(fixed), entry, 100, 25);
 	gtk_widget_set_size_request(entry, 200, 30);
 	gtk_entry_set_max_length(GTK_ENTRY(entry),100);
 

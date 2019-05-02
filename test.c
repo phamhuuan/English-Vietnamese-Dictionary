@@ -1,53 +1,31 @@
 #include <stdio.h>
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_acodec.h>
 
-int main(int argc, char **argv){
+static char code[128] = {0};
 
-//    ALLEGRO_DISPLAY *display = NULL;
-   ALLEGRO_SAMPLE *sample=NULL;
+const char* soundex(const char *s){
+	static char out[5];
+	int c, prev, i;
 
-   if(!al_init()){
-      fprintf(stderr, "failed to initialize allegro!\n");
-      return -1;
-   }
-al_install_audio();
-//    if(!al_install_audio()){
-//       fprintf(stderr, "failed to initialize audio!\n");
-//       return -1;
-//    }
-al_init_acodec_addon();
-//    if(!al_init_acodec_addon()){
-//       fprintf(stderr, "failed to initialize audio codecs!\n");
-//       return -1;
-//    }
-al_reserve_samples(1);
-//    if (!al_reserve_samples(1)){
-//       fprintf(stderr, "failed to reserve samples!\n");
-//       return -1;
-//    }
+	out[0] = out[4] = 0;
+	if(!s || !*s) return out;
 
-   sample = al_load_sample( "Orange-7-Shigatsu-wa-kimi-no-uso.wav" );
+	out[0] = *s++;
 
-//    if (!sample){
-//       printf( "Audio clip sample not loaded!\n" ); 
-//       return -1;
-//    }
+	/* first letter, though not coded, can still affect next letter: Pfister */
+	prev = code[(int)out[0]];printf("Out[0] = %d\n", (int)out[0]);printf("Prev1 = %d\n", prev);
+	for(i = 1; *s && i < 4; s++){
+		if((c = code[(int) *s]) == prev) {printf("c(continue) = %d\n", c);continue;}
+		if(c == -1) prev = 0;	/* vowel as separator */
+		else if(c > 0){
+			out[i++] = c + '0';
+			prev = c;printf("c(prev) = %d\n", c);
+            printf("Prev2 = %d\n", prev);
+		}
+	}
+	while(i < 4) out[i++] = '0';
+	return out;
+}
 
-//    display = al_create_display(0, 0);
-
-//    if(!display){
-//       fprintf(stderr, "failed to create display!\n");
-//       return -1;
-//    }
-
-   /* Loop the sample until the display closes. */
-   al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
-
-   al_rest(100.0);
-
-//    al_destroy_display(display);
-   al_destroy_sample(sample);
-   return 0;
+int main(){
+    printf("%s\n", soundex("1234"));
 }
