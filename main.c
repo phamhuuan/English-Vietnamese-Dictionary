@@ -10,6 +10,8 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
+#define WORD_MAX 255
+#define MEAN_MAX 10000
 //Khai bao
 BTA* dictionary = NULL;
 BTA *libraryTree = NULL;
@@ -19,6 +21,9 @@ GtkWidget *textView, *view1, *view2, *about_dialog, *entry_search;
 GtkWidget *window;
 GtkListStore *list;
 static char code[128] = {0};
+
+void separate_mean(char* mean);
+int convert_text_to_bt(char * filename);
 
 void sourceTutorial();
 void searchTutorial();
@@ -64,10 +69,16 @@ void myCSS(void);
 int main(int argc, char *argv[]){
 	btinit();
 	dictionary = btopn("data/evdic.dat", 0, 1);//cho phep update va share
+	if(dictionary == NULL){
+		g_print("Waiting for creating data...\n");
+		convert_text_to_bt("data/AnhViet.txt");
+		dictionary = btopn("data/evdic.dat", 0, 1);
+		g_print("Done!\n");
+	}
 	libraryTree = btopn("data/library.dat", 0, 1);
 	// gtk_widget_set_name(window, "window");
 	GtkWidget *image, *fixed;
-	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10;
+	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8;
 
 	gtk_init(&argc, &argv);//khoi tao gtk
 
@@ -140,16 +151,13 @@ int main(int argc, char *argv[]){
 	gtk_widget_set_size_request(button8, 240, 50);
 	g_signal_connect_swapped(button8, "clicked", G_CALLBACK(gtk_widget_destroy), window);
 
-	ALLEGRO_SAMPLE *sample=NULL;	
+	ALLEGRO_SAMPLE *sample=NULL;
 	al_install_audio();
 	al_init_acodec_addon();
 	al_reserve_samples(1);
 	sample = al_load_sample("Img/Orange-7-Shigatsu-wa-kimi-no-uso.wav" );
 	al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
 	al_rest(0.0);
-
-	GtkWidget *data1[1];
-	data1[0] = window;
 
 	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	
@@ -158,6 +166,44 @@ int main(int argc, char *argv[]){
 	btcls(libraryTree);
 	btcls(dictionary);
 	return 0;
+}
+
+int convert_text_to_bt(char *filename){
+    FILE * datafile;
+    BTA *convertfile;
+    convertfile = btcrt("data/evdic.dat", 0, 0);
+	datafile = fopen(filename, "r");
+
+    char word[WORD_MAX], mean[MEAN_MAX];
+    int line;
+
+    while (fscanf(datafile, "%[^\t]", word) == 1){
+        fgets(mean, MEAN_MAX, datafile);
+        line++;
+        separate_mean(mean);
+        btins(convertfile, word, mean, strlen(mean) + 1);    
+    }
+    btcls(convertfile);
+    fclose(datafile);
+    return 1;
+}
+
+void separate_mean(char* mean){
+    int i = 0, j = 1;
+    while (mean[j] != '\0'){
+        if (mean[j] == '\\' && mean[j + 1] == 'n'){
+            mean[i++] = '\n';
+            j += 2;
+        }
+        else{
+            if(i != j)
+                mean[i++] = mean[j++];
+            else{
+                i++; j++;
+            }
+	    }
+	}
+	mean[i] = '\0';
 }
 
 void myCSS(void){
@@ -200,10 +246,10 @@ void sourceTutorial(){
 }
 
 void searchTutorial(){
-	GtkWidget *window1, *fixed, *fixed2, *fixed3, *scrolling;
-	GtkWidget *label, *label1, *label2, *label3;
-	GtkWidget *image, *image1, *image2, *image3;
-	GtkWidget *button1, *button2, *button3;
+	GtkWidget *window1, *fixed, *fixed2, *scrolling;
+	GtkWidget *label;
+	GtkWidget *image, *image1, *image2;
+	GtkWidget *button1, *button2;
 	GtkWidget *textView1, *textView2;
 	GtkTextBuffer *buffer1, *buffer2;
 
@@ -235,14 +281,14 @@ void searchTutorial(){
 	gtk_text_buffer_set_text(buffer1, "Step 1: Enter word into search blank.", -1);
 	textView1 = gtk_text_view_new_with_buffer(buffer1);
 	gtk_widget_set_name(textView1, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView1, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView1), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView1, 20, 80);
 	gtk_widget_set_size_request(textView1, 760, 60);
 
 
 	image1 = gtk_image_new_from_file("Img/searchInterface1.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_widget_set_name(button1, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 20, 120);
 	gtk_widget_set_size_request(button1, 750, 507);
@@ -251,13 +297,13 @@ void searchTutorial(){
 	gtk_text_buffer_set_text(buffer2, "Step 2: Press search button.", -1);
 	textView2 = gtk_text_view_new_with_buffer(buffer2);
 	gtk_widget_set_name(textView2, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView2, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView2), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView2, 20, 660);
 	gtk_widget_set_size_request(textView2, 760, 60);
 
 	image2 = gtk_image_new_from_file("Img/searchInterface2.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_widget_set_name(button2, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 20, 710);
 	gtk_widget_set_size_request(button2, 750, 507);
@@ -266,8 +312,8 @@ void searchTutorial(){
 }
 
 void editTutorial(){
-	GtkWidget *window1, *fixed, *fixed2, *fixed3, *scrolling;
-	GtkWidget *label, *label1, *label2, *label3;
+	GtkWidget *window1, *fixed, *fixed2, *scrolling;
+	GtkWidget *label;
 	GtkWidget *image, *image1, *image2, *image3;
 	GtkWidget *button1, *button2, *button3;
 	GtkWidget *textView1, *textView2, *textView3;
@@ -301,13 +347,13 @@ void editTutorial(){
 	gtk_text_buffer_set_text(buffer1, "Step 1: Click on mean blank", -1);
 	textView1 = gtk_text_view_new_with_buffer(buffer1);
 	gtk_widget_set_name(textView1, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView1, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView1), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView1, 20, 80);
 	gtk_widget_set_size_request(textView1, 760, 60);
 
 	image1 = gtk_image_new_from_file("Img/editInterface1.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_widget_set_name(button1, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 20, 120);
 	gtk_widget_set_size_request(button1, 750, 507);
@@ -316,13 +362,13 @@ void editTutorial(){
 	gtk_text_buffer_set_text(buffer2, "Step 2: Edit meaning here.", -1);
 	textView2 = gtk_text_view_new_with_buffer(buffer2);
 	gtk_widget_set_name(textView2, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView2, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView2), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView2, 20, 660);
 	gtk_widget_set_size_request(textView2, 760, 60);
 
 	image2 = gtk_image_new_from_file("Img/editInterface2.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_widget_set_name(button2, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 20, 710);
 	gtk_widget_set_size_request(button2, 750, 507);
@@ -331,13 +377,13 @@ void editTutorial(){
 	gtk_text_buffer_set_text(buffer3, "Step 3: Press update meaning button", -1);
 	textView3 = gtk_text_view_new_with_buffer(buffer3);
 	gtk_widget_set_name(textView3, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView3, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView3), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView3, 20, 1220);
 	gtk_widget_set_size_request(textView3, 760, 60);
 
 	image3 = gtk_image_new_from_file("Img/editInterface3.png");
 	button3 = gtk_button_new();
-	gtk_button_set_image(button3, image3);
+	gtk_button_set_image(GTK_BUTTON(button3), image3);
 	gtk_widget_set_name(button3, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button3, 20, 1260);
 	gtk_widget_set_size_request(button3, 750, 507);
@@ -346,8 +392,8 @@ void editTutorial(){
 }
 
 void libraryTutorial(){
-	GtkWidget *window1, *fixed, *fixed2, *fixed3, *scrolling;
-	GtkWidget *label, *label1, *label2, *label3;
+	GtkWidget *window1, *fixed, *fixed2, *scrolling;
+	GtkWidget *label;
 	GtkWidget *image, *image1, *image2, *image3;
 	GtkWidget *button1, *button2, *button3;
 	GtkWidget *textView1, *textView2, *textView3;
@@ -381,13 +427,13 @@ void libraryTutorial(){
 	gtk_text_buffer_set_text(buffer1, "Press add to library button to add word to library.", -1);
 	textView1 = gtk_text_view_new_with_buffer(buffer1);
 	gtk_widget_set_name(textView1, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView1, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView1), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView1, 20, 80);
 	gtk_widget_set_size_request(textView1, 760, 60);
 
 	image1 = gtk_image_new_from_file("Img/libraryInterface1.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_widget_set_name(button1, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 20, 120);
 	gtk_widget_set_size_request(button1, 750, 507);
@@ -396,13 +442,13 @@ void libraryTutorial(){
 	gtk_text_buffer_set_text(buffer2, "Press remove from library button to remove word from library.", -1);
 	textView2 = gtk_text_view_new_with_buffer(buffer2);
 	gtk_widget_set_name(textView2, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView2, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView2), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView2, 20, 660);
 	gtk_widget_set_size_request(textView2, 760, 60);
 
 	image2 = gtk_image_new_from_file("Img/libraryInterface2.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_widget_set_name(button2, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 20, 710);
 	gtk_widget_set_size_request(button2, 750, 507);
@@ -411,13 +457,13 @@ void libraryTutorial(){
 	gtk_text_buffer_set_text(buffer3, "Press remove all button to remove all word from library.", -1);
 	textView3 = gtk_text_view_new_with_buffer(buffer3);
 	gtk_widget_set_name(textView3, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView3, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView3), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView3, 20, 1200);
 	gtk_widget_set_size_request(textView3, 760, 60);
 
 	image3 = gtk_image_new_from_file("Img/libraryInterface3.png");
 	button3 = gtk_button_new();
-	gtk_button_set_image(button3, image3);
+	gtk_button_set_image(GTK_BUTTON(button3), image3);
 	gtk_widget_set_name(button3, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button3, 100, 1240);
 	gtk_widget_set_size_request(button3, 600, 530);
@@ -426,10 +472,10 @@ void libraryTutorial(){
 }
 
 void addTutorial(){
-	GtkWidget *window1, *fixed, *fixed2, *fixed3, *scrolling;
-	GtkWidget *label, *label1, *label2, *label3;
-	GtkWidget *image, *image1, *image2, *image3;
-	GtkWidget *button1, *button2, *button3;
+	GtkWidget *window1, *fixed, *fixed2, *scrolling;
+	GtkWidget *label;
+	GtkWidget *image, *image1, *image2;
+	GtkWidget *button1, *button2;
 	GtkWidget *textView1, *textView2;
 	GtkTextBuffer *buffer1, *buffer2;
 
@@ -461,13 +507,13 @@ void addTutorial(){
 	gtk_text_buffer_set_text(buffer1, "Step 1: Enter word into input blank and meaning blank.", -1);
 	textView1 = gtk_text_view_new_with_buffer(buffer1);
 	gtk_widget_set_name(textView1, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView1, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView1), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView1, 20, 80);
 	gtk_widget_set_size_request(textView1, 760, 60);
 
 	image1 = gtk_image_new_from_file("Img/addInterface1.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_widget_set_name(button1, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 20, 120);
 	gtk_widget_set_size_request(button1, 750, 497);
@@ -476,13 +522,13 @@ void addTutorial(){
 	gtk_text_buffer_set_text(buffer2, "Step 2: Press add button.", -1);
 	textView2 = gtk_text_view_new_with_buffer(buffer2);
 	gtk_widget_set_name(textView2, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView2, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView2), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView2, 20, 650);
 	gtk_widget_set_size_request(textView2, 760, 60);
 
 	image2 = gtk_image_new_from_file("Img/addInterface2.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_widget_set_name(button2, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 20, 680);
 	gtk_widget_set_size_request(button2, 750, 497);
@@ -491,10 +537,10 @@ void addTutorial(){
 }
 
 void deleteTutorial(){
-	GtkWidget *window1, *fixed, *fixed2, *fixed3, *scrolling;
-	GtkWidget *label, *label1, *label2, *label3;
-	GtkWidget *image, *image1, *image2, *image3;
-	GtkWidget *button1, *button2, *button3;
+	GtkWidget *window1, *fixed, *fixed2, *scrolling;
+	GtkWidget *label;
+	GtkWidget *image, *image1, *image2;
+	GtkWidget *button1, *button2;
 	GtkWidget *textView1, *textView2;
 	GtkTextBuffer *buffer1, *buffer2;
 
@@ -526,14 +572,14 @@ void deleteTutorial(){
 	gtk_text_buffer_set_text(buffer1, "Step 1: Enter word into input blank.", -1);
 	textView1 = gtk_text_view_new_with_buffer(buffer1);
 	gtk_widget_set_name(textView1, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView1, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView1), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView1, 20, 80);
 	gtk_widget_set_size_request(textView1, 564, 60);
 
 
 	image1 = gtk_image_new_from_file("Img/deleteInterface1.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_widget_set_name(button1, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 0, 120);
 	gtk_widget_set_size_request(button1, 564, 429);
@@ -542,13 +588,13 @@ void deleteTutorial(){
 	gtk_text_buffer_set_text(buffer2, "Step 2: Press search button.", -1);
 	textView2 = gtk_text_view_new_with_buffer(buffer2);
 	gtk_widget_set_name(textView2, "textViewSearchTutorial");
-	gtk_text_view_set_editable(textView2, FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textView2), FALSE);
 	gtk_fixed_put(GTK_FIXED(fixed2), textView2, 20, 620);
 	gtk_widget_set_size_request(textView2, 564, 60);
 
 	image2 = gtk_image_new_from_file("Img/deleteInterface2.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_widget_set_name(button2, "buttonSearchTutorial");
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 0, 660);
 	gtk_widget_set_size_request(button2, 564, 429);
@@ -583,7 +629,7 @@ void tutorial(GtkWidget widget, gpointer window){
 
 	image1 = gtk_image_new_from_file("Img/sourceButton.png");
 	button1 = gtk_button_new();
-	gtk_button_set_image(button1, image1);
+	gtk_button_set_image(GTK_BUTTON(button1), image1);
 	gtk_fixed_put(GTK_FIXED(fixed2), button1, 15, 20);
 	gtk_widget_set_name(button1, "buttonTutorial");
 	gtk_widget_set_size_request(button1, 200, 200);
@@ -592,7 +638,7 @@ void tutorial(GtkWidget widget, gpointer window){
 	
 	image2 = gtk_image_new_from_file("Img/searchButton.png");
 	button2 = gtk_button_new();
-	gtk_button_set_image(button2, image2);
+	gtk_button_set_image(GTK_BUTTON(button2), image2);
 	gtk_fixed_put(GTK_FIXED(fixed2), button2, 255, 20);
 	gtk_widget_set_name(button2, "buttonTutorial");
 	gtk_widget_set_size_request(button2, 200, 200);
@@ -601,7 +647,7 @@ void tutorial(GtkWidget widget, gpointer window){
 
 	image3 = gtk_image_new_from_file("Img/addButton.png");
 	button3 = gtk_button_new();
-	gtk_button_set_image(button3, image3);
+	gtk_button_set_image(GTK_BUTTON(button3), image3);
 	gtk_fixed_put(GTK_FIXED(fixed2), button3, 495, 20);
 	gtk_widget_set_name(button3, "buttonTutorial");
 	gtk_widget_set_size_request(button3, 200, 200);
@@ -610,7 +656,7 @@ void tutorial(GtkWidget widget, gpointer window){
 
 	image4 = gtk_image_new_from_file("Img/editButton.png");
 	button4 = gtk_button_new();
-	gtk_button_set_image(button4, image4);
+	gtk_button_set_image(GTK_BUTTON(button4), image4);
 	gtk_fixed_put(GTK_FIXED(fixed2), button4, 15, 260);
 	gtk_widget_set_name(button4, "buttonTutorial");
 	gtk_widget_set_size_request(button4, 200, 200);
@@ -619,7 +665,7 @@ void tutorial(GtkWidget widget, gpointer window){
 	
 	image5 = gtk_image_new_from_file("Img/deleteButton.png");
 	button5 = gtk_button_new();
-	gtk_button_set_image(button5, image5);
+	gtk_button_set_image(GTK_BUTTON(button5), image5);
 	gtk_fixed_put(GTK_FIXED(fixed2), button5, 255, 260);
 	gtk_widget_set_name(button5, "buttonTutorial");
 	gtk_widget_set_size_request(button5, 200, 200);
@@ -628,7 +674,7 @@ void tutorial(GtkWidget widget, gpointer window){
 
 	image6 = gtk_image_new_from_file("Img/libraryButton.png");
 	button6 = gtk_button_new();
-	gtk_button_set_image(button6, image6);
+	gtk_button_set_image(GTK_BUTTON(button6), image6);
 	gtk_fixed_put(GTK_FIXED(fixed2), button6, 495, 260);
 	gtk_widget_set_name(button6, "buttonTutorial");
 	gtk_widget_set_size_request(button6, 200, 200);
@@ -637,7 +683,7 @@ void tutorial(GtkWidget widget, gpointer window){
 
 	image7 = gtk_image_new_from_file("Img/restoreButton.png");
 	button7 = gtk_button_new();
-	gtk_button_set_image(button7, image7);
+	gtk_button_set_image(GTK_BUTTON(button7), image7);
 	gtk_fixed_put(GTK_FIXED(fixed2), button7, 15, 500);
 	gtk_widget_set_name(button7, "buttonTutorial");
 	gtk_widget_set_size_request(button7, 200, 200);
@@ -645,7 +691,7 @@ void tutorial(GtkWidget widget, gpointer window){
 	
 	image8 = gtk_image_new_from_file("Img/teamButton.png");
 	button8 = gtk_button_new();
-	gtk_button_set_image(button8, image8);
+	gtk_button_set_image(GTK_BUTTON(button8), image8);
 	gtk_fixed_put(GTK_FIXED(fixed2), button8, 255, 500);
 	gtk_widget_set_name(button8, "buttonTutorial");
 	gtk_widget_set_size_request(button8, 200, 200);
@@ -735,8 +781,7 @@ int insert_insoundexlist(char *soundexlist , char *newword,  char *word, char *s
 			return 1;
 		}
 	}
-	else
-		return 0;
+	return 0;
 }
 
 void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung JRB to list ~
@@ -836,22 +881,21 @@ static void search(GtkWidget *w, gpointer data){
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	g_print("%s\n",a);
 	char word[50];
-	BTint x;
 
 	strcpy(word, a);
 	if(word[0] == '\0')
-		Message(GTK_WINDOW(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
+		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
 		int result = btfind(word);
 		if(result == 0)
-			Message(GTK_WINDOW(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
+			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
 	}
 	return;
 }
 
 void Message(GtkWidget *parent, GtkMessageType type, char *mms, char *content){//Dua ra thong bao
 	GtkWidget *mdialog;
-	mdialog = gtk_message_dialog_new(GTK_WINDOW(parent), GTK_DIALOG_DESTROY_WITH_PARENT, type, GTK_BUTTONS_OK, "%s", mms);
+	mdialog = gtk_message_dialog_new(GTK_WINDOW(parent), GTK_DIALOG_DESTROY_WITH_PARENT, type, GTK_BUTTONS_OK, "%s", mms);//
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(mdialog), "%s",  content);
 	gtk_dialog_run(GTK_DIALOG(mdialog));
 	gtk_widget_destroy(mdialog);
@@ -863,7 +907,6 @@ int btfind(char *word){// dung cho ham search
 
 	if(btsel(dictionary, word, mean, 100000, &size) == 0){
 		setTextView(mean);
-		g_print(mean);
 		return 1;
 	}
     else
@@ -883,7 +926,7 @@ static void edit( GtkWidget *w, gpointer data){// ham chuc nang edit
 	}
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
-	g_print("%s\n",a);
+	// g_print("%s\n",a);
 	char word[50],mean[100000];
 	strcpy(word,a);
 
@@ -900,14 +943,14 @@ static void edit( GtkWidget *w, gpointer data){// ham chuc nang edit
 	strcpy(mean,b);
 
 	if(word[0] == '\0' || mean[0] == '\0')
-		Message(GTK_WINDOW(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
+		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
 	else if(bfndky(dictionary, word, &x ) != 0)
-		Message(GTK_WINDOW(window1), GTK_MESSAGE_ERROR, "Error", "Word not found!");
+		Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error", "Word not found!");
 	else{
 		if(btupd(dictionary, word, mean, strlen(mean) + 1) == 1)
-			Message(GTK_WINDOW(window1),GTK_MESSAGE_ERROR, "Error","Can not update!");
+			Message(GTK_WIDGET(window1),GTK_MESSAGE_ERROR, "Error","Can not update!");
 		else
-			Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Success!","Updated!");
+			Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Updated!");
 	}
 }
 
@@ -915,36 +958,30 @@ void addToLibrary(GtkWidget *w, gpointer data){
 	GtkWidget *entry1= ((GtkWidget**)data)[0];
 	GtkWidget *window1=((GtkWidget**)data)[1];
 
-	BTint x;
-
-	int size = 100000;
-
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	char word[50];
 	strcpy(word,a);
 
-	if(bfndky(libraryTree, word, &x ) != 0){
-		binsky(libraryTree, word, &x);
-		Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Success!","Added!");
+	if(bfndky(libraryTree, word, NULL) != 0){
+		binsky(libraryTree, word, 0);
+		Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Added!");
 	}
-	else Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Notification!","Word already in library!");
+	else Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Notification!","Word already in library!");
 }
 
 void removeFromLibrary(GtkWidget *w, gpointer data){
 	GtkWidget *entry1= ((GtkWidget**)data)[0];
 	GtkWidget *window1=((GtkWidget**)data)[1];
-	GtkWidget *edit_view=((GtkWidget**)data)[2];
 
 	BTint x;
-	int size = 100000;
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));g_print("%s",a);
 	char word[50];
 	strcpy(word,a);
-	if(bfndky(libraryTree, word, &x) != 0) Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Notification!","Word is not exist in library!");
+	if(bfndky(libraryTree, word, &x) != 0) Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Notification!","Word is not exist in library!");
 	else{
 		bdelky(libraryTree, word);
-		Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Success!","Removed!");
+		Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Removed!");
 	}
 }
 
@@ -953,33 +990,30 @@ void close_window(GtkWidget *widget, gpointer window){
 }
 
 void searchWord(GtkWidget widget, gpointer window){
-	GtkWidget *table,*fixed, *image;
-	GtkWidget *button1,*window1,*label,*entry,*button2,*button3,*button4,*button5,*label2,*label3;
+	GtkWidget *fixed, *image;
+	GtkWidget *button1,*window1,*label,*button2,*button3,*button4,*button5,*label2;
 
 	myCSS();
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_widget_set_name(window1, "window1");
 	gtk_window_set_title(GTK_WINDOW(window1), "Search");
-	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 400);
+	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 470);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
 
-	table = gtk_table_new(2,4,FALSE);
-	gtk_container_add(GTK_CONTAINER(fixed), table);
-
 	label = gtk_label_new("Input:");
-	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
+	gtk_fixed_put(GTK_FIXED(fixed), label, 30, 30);
 
 	entry_search = gtk_entry_new();
 	gtk_widget_set_size_request(entry_search, 300, 30);
+	gtk_fixed_put(GTK_FIXED(fixed), entry_search, 100, 25);
 	gtk_entry_set_max_length(GTK_ENTRY(entry_search), 100);
-	gtk_table_attach(GTK_TABLE(table), entry_search, 1, 2, 0, 1, GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
 	gtk_widget_set_name(entry_search, "entry_search");
 
-	GtkWidget *comple = gtk_entry_completion_new();
+	GtkEntryCompletion *comple = gtk_entry_completion_new();
 	gtk_entry_completion_set_text_column(comple, 0);
 	list = gtk_list_store_new(10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_entry_completion_set_model(comple, GTK_TREE_MODEL(list));
@@ -991,17 +1025,14 @@ void searchWord(GtkWidget widget, gpointer window){
 	gtk_widget_set_size_request(button1, 90, 30);
 
 	label2 = gtk_label_new("Meaning:");
-	gtk_table_attach(GTK_TABLE(table), label2, 0, 1, 1, 2,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 200);
-
-	textView = gtk_text_view_new();
-	gtk_widget_set_size_request(textView, 300, 300);
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textView), GTK_WRAP_WORD);
-	gtk_widget_set_name(textView, "textView");
+	gtk_fixed_put(GTK_FIXED(fixed), label2, 30, 200);
 
 	GtkWidget *scrolling = gtk_scrolled_window_new(NULL, NULL);
-	gtk_container_add(GTK_CONTAINER(scrolling), textView);
+	gtk_fixed_put(GTK_FIXED(fixed), scrolling, 100, 100);
+	gtk_widget_set_size_request(scrolling, 300, 300);
 
-	gtk_table_attach(GTK_TABLE(table), scrolling, 1, 2, 1, 2,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
+	textView = gtk_text_view_new();
+	gtk_container_add(GTK_CONTAINER(scrolling), textView);
 
 	button2 = gtk_button_new_with_label("Back");
 	gtk_widget_set_name(button2, "buttonBack");
@@ -1059,7 +1090,6 @@ static void add(GtkWidget *w, gpointer data){
 	b = gtk_text_buffer_get_text (buffer1, &start, &end, FALSE);
 
 	strcpy(word,b);
-	g_print(word);
 
 	buffer2 = gtk_text_view_get_buffer(GTK_TEXT_VIEW(GTK_TEXT_VIEW(view2)));
 	gtk_text_buffer_get_iter_at_offset(buffer2, &iter, 0);
@@ -1070,19 +1100,18 @@ static void add(GtkWidget *w, gpointer data){
 
 	strcpy(mean,b);
 	printf("\n");
-	g_print(mean);
 
-	BTint x;
+	// char* x = NULL;
 
 	if(word[0] == '\0' || mean[0] == '\0')
-		Message(GTK_WINDOW(data), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
-	else if(bfndky(dictionary, word, &x ) == 0)
-		Message(GTK_WINDOW(data), GTK_MESSAGE_ERROR, "Error!", "Word already in dictionary!");
+		Message(GTK_WIDGET(data), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
+	else if(bfndky(dictionary, word, NULL) == 0)
+		Message(GTK_WIDGET(data), GTK_MESSAGE_ERROR, "Error!", "Word already in dictionary!");
 	else{
 		if(btins(dictionary,word, mean,10000))
-			Message(GTK_WINDOW(data),GTK_MESSAGE_ERROR, "Error!","Can not add word!");
+			Message(GTK_WIDGET(data),GTK_MESSAGE_ERROR, "Error!","Can not add word!");
 		else
-			Message(GTK_WINDOW(data),GTK_MESSAGE_INFO, "Success!","Done!");
+			Message(GTK_WIDGET(data),GTK_MESSAGE_INFO, "Success!","Done!");
 	}
 	return;
 }
@@ -1091,29 +1120,29 @@ static void del(GtkWidget *w, gpointer data){
 	GtkWidget *entry1= ((GtkWidget**)data)[0];
 	GtkWidget *window1=((GtkWidget**)data)[1];
 
-	a = gtk_entry_get_text(entry1);
+	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	g_print("%s\n",a);
 	char mean[10000], word[50];
 	int size;
 	BTint x;
 	strcpy(word,a);
 	if (word[0] == '\0')
-		Message(GTK_WINDOW(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank.");
+		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank.");
 	else if (bfndky(dictionary, word, &x ) != 0)
-		Message(GTK_WINDOW(window1), GTK_MESSAGE_ERROR, "Error!", "Word not found!");
+		Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!", "Word not found!");
 	else
 	if(btsel(dictionary,word,mean,100000,&size)==0){
 		btdel(dictionary,word);
-		Message(GTK_WINDOW(window1),GTK_MESSAGE_INFO, "Success!","Done!");
+		Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Done!");
 	}
 	else
-		Message(GTK_WINDOW(window1),GTK_MESSAGE_ERROR, "Error!","Can not delete!");
+		Message(GTK_WIDGET(window1),GTK_MESSAGE_ERROR, "Error!","Can not delete!");
 	return;
 }
 
 void addWord(GtkWidget widget, gpointer window){
-	GtkWidget *table,*fixed, *button2, *image;
-	GtkWidget *button1,*window1,*label1,*entry1,*label2,*entry2;
+	GtkWidget *fixed, *button2, *image;
+	GtkWidget *button1,*window1,*label1,*label2;
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window1), "Add word");
@@ -1126,29 +1155,26 @@ void addWord(GtkWidget widget, gpointer window){
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
 	gtk_widget_set_name(window1, "window2");
 
-	table = gtk_table_new(2,4,FALSE);
-	gtk_container_add(GTK_CONTAINER(fixed), table);
-
 	label1 = gtk_label_new("Word:");
-	gtk_table_attach(GTK_TABLE(table), label1, 0, 1, 0, 1,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
+	gtk_fixed_put(GTK_FIXED(fixed), label1, 30, 30);
 
 	view1 = gtk_text_view_new();
-	gtk_widget_set_size_request(view1, 300, 20);
+	gtk_widget_set_size_request(view1, 300, 30);
+	gtk_fixed_put(GTK_FIXED(fixed), view1, 100, 25);
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(view1), GTK_WRAP_WORD);
-	gtk_table_attach(GTK_TABLE(table), view1, 1, 2, 0, 1,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
 	gtk_widget_set_name(view1, "view1");
 
 	label2 = gtk_label_new("Meaning:");
-	gtk_table_attach(GTK_TABLE(table), label2, 0, 1, 1, 2,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 200);
-
-	view2 = gtk_text_view_new();
-	gtk_widget_set_size_request(view2, 300, 300);
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(view2), GTK_WRAP_WORD);
-	gtk_widget_set_name(view2, "view2");
+	gtk_fixed_put(GTK_FIXED(fixed), label2, 30, 200);
 
 	GtkWidget *scrolling = gtk_scrolled_window_new(NULL, NULL);
+	gtk_fixed_put(GTK_FIXED(fixed), scrolling, 100, 100);
+	gtk_widget_set_size_request(scrolling, 300, 300);
+
+	view2 = gtk_text_view_new();
 	gtk_container_add(GTK_CONTAINER(scrolling), view2);
-	gtk_table_attach(GTK_TABLE(table), scrolling, 1, 2, 1, 2,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(view2), GTK_WRAP_WORD);
+	gtk_widget_set_name(view2, "view2");
 
 	button1 = gtk_button_new_with_label("Add");
 	gtk_widget_set_name(button1, "buttonAdd");
@@ -1166,19 +1192,17 @@ void addWord(GtkWidget widget, gpointer window){
 	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	image = gtk_image_new_from_file("Img/kousei.jpg");
-	gtk_fixed_put(GTK_FIXED(fixed), image, 450, 150);
-	gtk_container_add(GTK_CONTAINER(fixed), image);
+	gtk_fixed_put(GTK_FIXED(fixed), image, 450, 80);
 
 	gtk_widget_show_all(window1);
 
 	gtk_main();
 
 	return;
-
 }
 
 void deleteWord(GtkWidget widget, gpointer window){
-	GtkWidget *table,*fixed, *image;
+	GtkWidget *fixed, *image;
 	GtkWidget *button1,*window1,*label,*entry,*button2;
 
 	myCSS();
@@ -1195,17 +1219,14 @@ void deleteWord(GtkWidget widget, gpointer window){
 	gtk_widget_set_name(image, "imgDel");
 	gtk_container_add(GTK_CONTAINER(fixed), image);
 
-	table = gtk_table_new(1,4,FALSE);
-	gtk_container_add(GTK_CONTAINER(fixed), table);
-
 	label = gtk_label_new("Input:");
-	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
+	gtk_fixed_put(GTK_FIXED(fixed), label, 30, 30);
 
 	entry = gtk_entry_new();
 	gtk_widget_set_name(entry, "entry");
+	gtk_fixed_put(GTK_FIXED(fixed), entry_search, 100, 25);
 	gtk_widget_set_size_request(entry, 200, 30);
 	gtk_entry_set_max_length(GTK_ENTRY(entry),100);
-	gtk_table_attach(GTK_TABLE(table), entry, 1, 2, 0, 1,GTK_FILL | GTK_SHRINK, GTK_FILL | GTK_SHRINK, 15, 15);
 
 	button1 = gtk_button_new_with_label("Delete");
 	gtk_widget_set_name(button1, "buttonDel");
@@ -1248,8 +1269,8 @@ void restore(){
     }while((n > 0) && (n == m));
 	fclose(fin);
 	fclose(fout);
-	dictionary = btopn("evdic.dat", 0, 1);
-	Message(GTK_WINDOW(window),GTK_MESSAGE_INFO, "Success!","Restored!");
+	dictionary = btopn("data/evdic.dat", 0, 1);
+	Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Success!","Restored!");
 }
 
 void phamhuuan(GtkWidget widget, gpointer window){
@@ -1274,7 +1295,7 @@ void doanngocchien(GtkWidget widget, gpointer window){
 
 void removeAll(){
 	char word[50];
-	BTint x;
+	char* x = NULL;
 	int size;
 	btsel(libraryTree, "", word, sizeof(char) * (strlen(word) + 1), &size); bdelky(libraryTree, word);
     while(btseln(libraryTree, word, x, 0, &size) == 0) bdelky(libraryTree, word);
@@ -1285,7 +1306,7 @@ void library(GtkWidget widget, gpointer window){
 	
 	char word[50], mean[100000];
 	int count = 1, size;
-	BTint x;
+	char* x = NULL;
 
 	myCSS();
 

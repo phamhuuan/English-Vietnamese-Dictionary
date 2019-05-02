@@ -4,7 +4,6 @@ BIN = main libbt.a libfdr.a
 SOURCE = main.c
 
 all:
-	$(CC) $(SOURCE) $(FLAGS) -o $(BIN)
-
+	$(CC) $(SOURCE) $(FLAGS) -o $(BIN) && gedit README.md
 clean:
 	rm main

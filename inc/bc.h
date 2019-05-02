@@ -44,8 +44,8 @@ typedef int BTint;
 
 #define DEBUG 0
 
-#define TRUE 1
-#define FALSE 0
+#define FALSE (0)
+#define TRUE (!FALSE)
 
 #define LFSHDR 0xFFBADDEF
 

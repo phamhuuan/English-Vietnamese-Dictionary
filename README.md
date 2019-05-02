@@ -1,12 +1,21 @@
 # English-Vietnamese-Dictionary
-C Advance
 
-*Note: Use with Linux OS
+I. Author: Pham Huu An & Doan Ngoc Chien
 
-Author: Pham Huu An
+II. function:
+1 Search Word
+2 Edit word
+3 Delete word
+4 Add word to library
+5 Remove word from library
+6 Restore dictionary
 
-Install GTK3.0+ librayry: sudo apt install libgtk-3-dev
-Install Allegro5: sudo apt install liballegro5-dev
+III. Image source
+1 Pinterest
 
-Make file: make
-Make clean: make clean
+IV. Music source
+1 Zing mp3
+
+V. Version: 19.05 last updated: 05/02/2019 (mm/dd/yyyy)
+
+VI. License: none
