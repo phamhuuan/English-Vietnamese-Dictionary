@@ -1,0 +1,167 @@
+#window1{
+    background:  #ffcccc;
+}
+
+#window2{
+    background:  #ccffff;
+}
+
+#window3{
+    background: linear-gradient(-90deg, #003380, #cce0ff)
+}
+
+#labelTitleSearchTutorial{
+    font-size: 40px;
+    /* color: black; */
+}
+
+#textViewSearchTutorial{
+    background: transparent;
+    font-size: 20px;
+    color: black;
+    opacity: 0.5;
+    /* font-weight: bold; */
+}
+
+#imageTutorial{
+    opacity: 1;
+}
+
+#buttonSearchTutorial{
+    opacity: 0.1;
+    background: transparent;
+}
+
+#buttonSearchTutorial:hover{
+    opacity: 1;
+    background: none;
+}
+
+#entry_search{
+    background: #ffe6e6;
+}
+
+#textView{
+    background: #ffe6e6;
+    border-radius: 5px;
+}
+
+#view1,
+#view2{
+    background: #e6ffff;
+}
+
+#buttonSearch,
+#buttonSave,
+#buttonUpt,
+#buttonBack,
+#buttonRemove{
+    opacity: 0.8;
+    /* background: linear-gradient(-90deg, #ffccff,#ff99ff); */
+    background: #ff99ff;
+}
+
+#buttonLibraryTextView{
+    background: #ff99ff;
+}
+
+#buttonAdd,
+#buttonAddBack{
+    opacity: 0.8;
+    background: linear-gradient(-90deg, #b3ffff, #4dffff)
+}
+
+#buttonAdd:hover,
+#buttonAddBack:hover{
+    opacity: 0.1;
+}
+
+#buttonSearch:hover,
+#buttonSave:hover,
+#buttonUpt:hover,
+#buttonBack:hover,
+#buttonRemove:hover{
+    opacity: 0.1;
+}
+
+#image{
+    opacity: 1;
+}
+
+#buttonTutorial{
+    background: transparent;
+    font-size: 20px;
+    opacity: 0.5;
+}
+
+#buttonTutorial:hover{
+    opacity: 1;
+}
+
+#button1{
+    /* background: transparent; */
+    background: #ffffcc;
+    color: black;
+    opacity: 0.8;
+    font-family: 'Times New Roman', Times, serif;
+    font-style: normal;
+    font-weight: bold;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+#button2{
+    /* background: transparent; */
+    background: #ffffcc;
+    /* background: #e6ffff; */
+    color: black;
+    opacity: 0.8;
+    font-family: 'Times New Roman', Times, serif;
+    font-style: normal;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+#button1:hover,
+#button2:hover{
+   opacity: 0.1;
+}
+
+#buttonRemoveAll{
+    opacity: 0.8;
+    /* background: #ffa31a; */
+    background: transparent;
+    /* border: transparent; */
+}
+
+#buttonRemoveAll:hover{
+    opacity: 0.1;
+}
+
+#scrolling{
+    border: black;
+    background: #ffd24d;
+    opacity: 0.5;
+}
+
+#scrollingDel{
+    opacity: 0;
+}
+
+#buttonLibrary{
+    background: transparent;
+    color: black;
+}
+
+#entry{
+    background: transparent;
+}
+
+#buttonDel{
+    background: transparent;
+    font-weight: bold;
+}
+
+#imgDel{
+    opacity: 0.8;
+}
