@@ -11,7 +11,8 @@ void team(GtkWidget widget, gpointer window){
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_widget_set_name(window1, "window3");
-	gtk_window_set_title(GTK_WINDOW(window1), "About team");
+	if(theme == 1) gtk_window_set_title(GTK_WINDOW(window1), "About team");
+	if(theme == 2) gtk_window_set_title(GTK_WINDOW(window1), "About team");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 500, 240);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
 
@@ -40,7 +41,8 @@ void team(GtkWidget widget, gpointer window){
 	gtk_fixed_put(GTK_FIXED(fixed), label2, 120, 150);
 	gtk_label_set_markup(GTK_LABEL(label2), info2);
 
-	image3 = gtk_image_new_from_file("../Img/kaoriandkousei.jpg");
+	if(theme == 1) image3 = gtk_image_new_from_file("../Img/kaoriandkousei.jpg");//them anh tu file
+	if(theme == 2) image3 = gtk_image_new_from_file("../Img/tfwb4.jpg");
 	gtk_fixed_put(GTK_FIXED(fixed), image3, 350, 0);
 
 	gtk_widget_show_all(window1);

@@ -2,9 +2,9 @@ static char code[128] = {0};
 GtkListStore *list;
 
 int prefix(const char *big, const char *small);
-int btfind(char *word);
+int btfind(char *word, BTA* file);
 int commond_char(char * str1, char * str2, int start);
-void jrb_to_list(JRB nextWordArray, int number);
+void jrb_to_list(JRB nextWordArray);
 int insert_insoundexlist(char *soundexlist , char *newword,  char *word, char *soundexWord);
 static void search(GtkWidget *w, gpointer data);
 void suggest(char * word, gboolean Tab_pressed);
@@ -59,7 +59,7 @@ int commond_char(char * str1, char * str2, int start){
 	return i;
 }
 
-void jrb_to_list(JRB nextWordArray, int number){
+void jrb_to_list(JRB nextWordArray){
    	GtkTreeIter Iter;
    	JRB tmp;
    	int max = 8;
@@ -145,7 +145,7 @@ void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung
 		}
 	}
 	else
-		jrb_to_list(nextWordArray, i);
+		jrb_to_list(nextWordArray);
 	if(!existed)
 		btdel(dictionary, word);
 	jrb_free_tree(nextWordArray);
@@ -185,7 +185,7 @@ static void search(GtkWidget *w, gpointer data){
 	if(word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
-		int result = btfind(word);
+		int result = btfind(word, dictionary);
 		if(result == 0)
 			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
 	}
@@ -193,14 +193,45 @@ static void search(GtkWidget *w, gpointer data){
 	if(bfndky(libraryTree, word, &x) != 0) gtk_button_set_label(GTK_BUTTON(button4), "Add to library");
 	else gtk_button_set_label(GTK_BUTTON(button4), "Remove from library");
 
+	
+	//Luu vao file history
+
+	if(bfndky(historyTree, word, &x) != 0)
+		binsky(historyTree, word, 0);
+
+	// btsel(dictionary, word, mean, 100000, &size);
+	// g_print("%d\n",btins(historyTree, word, mean, strlen(mean) + 1));
+
+	for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
+	
+	fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);fclose(fileHistory);
+
+	fileHistory = fopen("../data/history.dat", "rb");
+	linkedList = new_dllist();int temp = 0;
+	while(fscanf(fileHistory, "%s", wordHistory) != EOF){
+		strcpy(wordTmp[temp++], wordHistory);//g_print("%s\n", wordHistory);
+	}
+	fclose(fileHistory);
+	for(int i = 0; i < temp; i++) dll_append(linkedList, new_jval_s(wordTmp[i]));
+
+	dll_traverse(node, linkedList)
+		if(strcmp(jval_s(node->val), word) == 0 && node != linkedList->blink){
+			dll_delete_node(node);
+			break;
+		}
+	fileHistory = fopen("../data/history.dat", "wb");
+	dll_traverse(node, linkedList)
+		fprintf(fileHistory, "%s\n", jval_s(node->val));
+	fclose(fileHistory);
+	free_dllist(linkedList);
+
 	return;
 }
 
-int btfind(char *word){// dung cho ham search
+int btfind(char *word, BTA* file){// dung cho ham search
 	char mean[100000];
-	int size;
 
-	if(btsel(dictionary, word, mean, 100000, &size) == 0){
+	if(btsel(file, word, mean, 100000, &size) == 0){
 		setTextView(mean, GTK_TEXT_VIEW(textView));
 		return 1;
 	}
@@ -282,7 +313,8 @@ void searchWord(GtkWidget widget, gpointer window){
 	myCSS();
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_widget_set_name(window1, "window1");
+	if(theme == 1) gtk_widget_set_name(window1, "window1");
+	if(theme == 1) gtk_widget_set_name(window1, "window1Theme2");
 	gtk_window_set_title(GTK_WINDOW(window1), "Search");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 430);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
@@ -296,17 +328,20 @@ void searchWord(GtkWidget widget, gpointer window){
 	entry_search = gtk_entry_new();
 	gtk_widget_set_size_request(entry_search, 300, 30);
 	gtk_fixed_put(GTK_FIXED(fixed), entry_search, 100, 25);
-	gtk_entry_set_max_length(GTK_ENTRY(entry_search), 100);
-	gtk_widget_set_name(entry_search, "entry_search");
+	gtk_entry_set_max_length(GTK_ENTRY(entry_search), 50);
+	if(theme == 1) gtk_widget_set_name(entry_search, "entry_search");
+	if(theme == 2) gtk_widget_set_name(entry_search, "entry_searchTheme2");
 
 	GtkEntryCompletion *comple = gtk_entry_completion_new();
 	gtk_entry_completion_set_text_column(comple, 0);
 	list = gtk_list_store_new(10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_entry_completion_set_model(comple, GTK_TREE_MODEL(list));
+	gtk_entry_set_placeholder_text(GTK_ENTRY(entry_search), "Enter word here");
 	gtk_entry_set_completion(GTK_ENTRY(entry_search), comple);
 
 	button1 = gtk_button_new_with_label("Search");
-	gtk_widget_set_name(button1, "buttonSearch");
+	if(theme == 1) gtk_widget_set_name(button1, "buttonSearch");
+	if(theme == 2) gtk_widget_set_name(button1, "buttonSearchTheme2");
 	gtk_fixed_put(GTK_FIXED(fixed), button1, 450, 15);
 	gtk_widget_set_size_request(button1, 90, 30);
 
@@ -319,24 +354,29 @@ void searchWord(GtkWidget widget, gpointer window){
 
 	textView = gtk_text_view_new();
 	gtk_container_add(GTK_CONTAINER(scrolling), textView);
-	gtk_widget_set_name(textView, "textView");
+	if(theme == 1) gtk_widget_set_name(textView, "textView");
+	if(theme == 2) gtk_widget_set_name(textView, "entry_searchTheme2");
 
 	button2 = gtk_button_new_with_label("Back");
-	gtk_widget_set_name(button2, "buttonBack");
+	if(theme == 1) gtk_widget_set_name(button2, "buttonBack");
+	if(theme == 2) gtk_widget_set_name(button2, "buttonSearchTheme2");
 	gtk_fixed_put(GTK_FIXED(fixed), button2, 560, 15);
 	gtk_widget_set_size_request(button2, 90, 30);
 
 	button4 = gtk_button_new();
-	gtk_widget_set_name(button4, "buttonSave");
+	if(theme == 1) gtk_widget_set_name(button4, "buttonSave");
+	if(theme == 2) gtk_widget_set_name(button4, "buttonSearchTheme2");
 	gtk_fixed_put(GTK_FIXED(fixed), button4, 450, 50);
 	gtk_widget_set_size_request(button4, 200, 30);
 
 	button3 = gtk_button_new_with_label("Update meaning");
-	gtk_widget_set_name(button3, "buttonUpt");
+	if(theme == 1) gtk_widget_set_name(button3, "buttonUpt");
+	if(theme == 2) gtk_widget_set_name(button3, "buttonSearchTheme2");
 	gtk_fixed_put(GTK_FIXED(fixed), button3, 450, 85);
 	gtk_widget_set_size_request(button3, 200, 30);
 
-	image = gtk_image_new_from_file("../Img/kaori.jpg");
+	if(theme == 1) image = gtk_image_new_from_file("../Img/kaori.jpg");
+	if(theme == 2) image = gtk_image_new_from_file("../Img/tfwb2.jpg");
 	gtk_fixed_put(GTK_FIXED(fixed), image, 450, 125);
 
 	GtkWidget *data[4];

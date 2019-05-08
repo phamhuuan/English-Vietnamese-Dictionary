@@ -40,7 +40,8 @@ void searchTutorial(){
 
     initMainTutorial();
 
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1) ,"../Img/kaori7.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1) ,"../Img/kaori7.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1) ,"../Img/tfwb11.jpg");
 
     gtk_fixed_move(GTK_FIXED(tutorialFixed), tutorialLabel1, 70, 100);
     gtk_label_set_markup(GTK_LABEL(tutorialLabel1), "Search tutorial");
@@ -59,7 +60,8 @@ void editTutorial(){
 
     initMainTutorial();
 
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori8.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori8.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/tfwb12.jpg");
 
     gtk_fixed_move(GTK_FIXED(tutorialFixed), tutorialLabel1, 85, 100);
     gtk_label_set_markup(GTK_LABEL(tutorialLabel1), "Edit tutorial");
@@ -82,7 +84,8 @@ void addTutorial(){
 
     initMainTutorial();
 
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori10.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori10.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/tfwb13.jpg");
 
     gtk_fixed_move(GTK_FIXED(tutorialFixed), tutorialLabel1, 90, 100);
     gtk_label_set_markup(GTK_LABEL(tutorialLabel1), "Add tutorial");
@@ -101,7 +104,8 @@ void deleteTutorial(){
 
     initMainTutorial();
 
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori11.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori11.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/tfwb14.jpg");
 
     gtk_fixed_move(GTK_FIXED(tutorialFixed), tutorialLabel1, 70, 100);
     gtk_label_set_markup(GTK_LABEL(tutorialLabel1), "Delete tutorial");
@@ -120,7 +124,8 @@ void libraryTutorial(){
 
     initMainTutorial();
 
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori12.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori12.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/tfwb15.jpg");
 
     gtk_fixed_move(GTK_FIXED(tutorialFixed), tutorialLabel1, 85, 100);
     gtk_label_set_markup(GTK_LABEL(tutorialLabel1), "Library tutorial");
@@ -140,7 +145,8 @@ void libraryTutorial(){
 
 void remainTutorial(){
     gtk_window_resize(GTK_WINDOW(tutorialWindow), 400, 600);
-    gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori9.jpg");
+    if(theme == 1) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/kaori9.jpg");
+    if(theme == 2) gtk_image_set_from_file(GTK_IMAGE(tutorialImage1), "../Img/tfwb10.jpg");
 
     initMainTutorial();
 
@@ -174,7 +180,8 @@ void tutorial(GtkWidget widget, gpointer window){
 	tutorialFixed = gtk_fixed_new();//create new fixed
 	gtk_container_add(GTK_CONTAINER(tutorialWindow), tutorialFixed);//add widget to container
     
-	tutorialImage1 = gtk_image_new_from_file("../Img/kaori9.jpg");//them anh tu file
+	if(theme == 1) tutorialImage1 = gtk_image_new_from_file("../Img/kaori9.jpg");
+	if(theme == 2) tutorialImage1 = gtk_image_new_from_file("../Img/tfwb10.jpg");
 	gtk_container_add(GTK_CONTAINER(tutorialFixed), tutorialImage1);
 	gtk_widget_set_name(tutorialImage1, "imageTutorial");
 

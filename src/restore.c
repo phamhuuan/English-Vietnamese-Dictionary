@@ -1,6 +1,7 @@
 void restore();
 
 void restore(){
+	gtk_spinner_start(GTK_SPINNER(spinner));
 	btcls(dictionary);
 	FILE *fin, *fout;
 	fin = fopen("../data/evdic2.dat", "rb");
@@ -16,5 +17,6 @@ void restore(){
 	fclose(fin);
 	fclose(fout);
 	dictionary = btopn("../data/evdic.dat", 0, 1);
+	gtk_spinner_stop(GTK_SPINNER(spinner));
 	Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Success!","Restored!");
 }

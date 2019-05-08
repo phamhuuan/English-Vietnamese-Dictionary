@@ -4,6 +4,7 @@
 #include <string.h>
 #include "../inc/btree.h"
 #include "jrb.h"
+#include "dllist.h"
 #include <gdk/gdkkeysyms.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <allegro5/allegro.h>
@@ -24,6 +25,7 @@
 #include "delete.c"
 #include "restore.c"
 #include "setting.c"
+#include "history.c"
 
 //Khai bao
 const gchar *a, *b;
@@ -31,20 +33,32 @@ ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE_INSTANCE* instance;
 BTA *dictionary = NULL;
 BTA *libraryTree = NULL;
+BTA *historyTree = NULL;
 int i = 0;
 FILE *fileSettingMusic;
+FILE *fileHistory;
+FILE *fileSettingTheme;
+FILE *fileUser;
+FILE *fileIsLogIn;
+char wordHistory[50];
+char wordTmp[1000][50];
+int size;
+int theme;
+int isLogin;
 
-// typedef struct settingMusic;
-// typedef struct settingMusic{
-// 	int mute;
-// 	float vol;
-// }SettingMusic;
+Dllist node, linkedList;
 
 GtkWidget *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
-GtkWidget *window;
-SettingMusic s;
+GtkWidget *window, *image;
+SettingMusic s;//tao hai bien int mute, float vol rieng cung dc nhung neu dung fread fwrite thi can struct
 
 int main(int argc, char *argv[]){
+	fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+	fscanf(fileIsLogIn, "%d", &isLogin);
+	fclose(fileIsLogIn);
+	btinit();
+	historyTree = btopn("../data/historyBtree.dat", 0, 1);
+	if(historyTree == NULL) btcrt("../data/historyBtree.dat", 0, 1);
 	btinit();
 	dictionary = btopn("../data/evdic.dat", 0, 1);//cho phep update va share
 	if(dictionary == NULL){
@@ -53,21 +67,28 @@ int main(int argc, char *argv[]){
 		dictionary = btopn("../data/evdic.dat", 0, 1);
 		g_print("Done!\n");
 	}
+	btinit();
 	libraryTree = btopn("../data/library.dat", 0, 1);
-	GtkWidget *image, *image2, *fixed;
-	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9;
+	fileSettingTheme = fopen("../data/settingTheme.dat", "rb");
+    fscanf(fileSettingTheme, "%d", &theme);
+    fclose(fileSettingTheme);
+
+	GtkWidget *image2, *fixed;
+	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10;
 
 	gtk_init(&argc, &argv);//khoi tao gtk
 
 	al_install_audio();
 	al_init_acodec_addon();
 	al_reserve_samples(1);
-	sample = al_load_sample("../Img/Orange-7-Shigatsu-wa-kimi-no-uso.wav");
+	if(theme == 1) sample = al_load_sample("../Img/Orange7.wav");
+	if(theme == 2) sample = al_load_sample("../Img/GotoubunNoKimochi.wav");
 	instance = al_create_sample_instance(sample);
 	al_attach_sample_instance_to_mixer(instance, al_get_default_mixer());
 	al_set_sample_instance_playing(instance, true);
 	fileSettingMusic = fopen("../data/settingMusic.dat", "rb");
-	fread(&s, sizeof(s), 1, fileSettingMusic);
+	fscanf(fileSettingMusic, "%d %f", &s.mute, &s.vol);
+	// fread(&s, sizeof(s), 1, fileSettingMusic);
 	fclose(fileSettingMusic);
 	if(s.mute == 1) al_set_sample_instance_gain(instance, 0.0);
 	else al_set_sample_instance_gain(instance, s.vol);
@@ -80,11 +101,11 @@ int main(int argc, char *argv[]){
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);//set size of GtkWindow
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//Cua so se xuat hien o giua man hinh
 
-
 	/*Tao hinh nen*/
 	fixed = gtk_fixed_new();//create new fixed
 	gtk_container_add(GTK_CONTAINER(window), fixed);//add widget to container
-	image = gtk_image_new_from_file("../Img/shigatsuwakiminouso2.jpg");//them anh tu file
+	if(theme == 1) image = gtk_image_new_from_file("../Img/shigatsuwakiminouso2.jpg");//them anh tu file
+	if(theme == 2) image = gtk_image_new_from_file("../Img/tfwb1.jpg");
 	gtk_container_add(GTK_CONTAINER(fixed), image);
 
 	myCSS();
@@ -92,8 +113,14 @@ int main(int argc, char *argv[]){
 	button1 = gtk_button_new_with_label("Tutorial");//tao nut
 	gtk_widget_set_name(button1, "button1");//dung cho myCSS
 	gtk_fixed_put(GTK_FIXED(fixed), button1, 350, 160);//toa do
-	gtk_widget_set_size_request(button1, 240, 50);//size
+	gtk_widget_set_size_request(button1, 110, 50);//size
 	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(tutorial), NULL);
+
+	button10 = gtk_button_new_with_label("History");//tao nut
+	gtk_widget_set_name(button10, "button2");//dung cho myCSS
+	gtk_fixed_put(GTK_FIXED(fixed), button10, 480, 160);//toa do
+	gtk_widget_set_size_request(button10, 110, 50);//size
+	g_signal_connect(G_OBJECT(button10), "clicked", G_CALLBACK(history), NULL);
 
 	button2 = gtk_button_new_with_label("Search word");
 	gtk_widget_set_name(button2, "button2");
@@ -156,6 +183,7 @@ int main(int argc, char *argv[]){
 	
 	gtk_widget_show_all(window);
 	gtk_main();
+	btcls(historyTree);
 	btcls(libraryTree);
 	btcls(dictionary);
 	return 0;

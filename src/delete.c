@@ -12,7 +12,7 @@ void del(GtkWidget *w, gpointer data){
 	strcpy(word,a);
 	if (word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank.");
-	else if (bfndky(dictionary, word, &x ) != 0)
+	else if(bfndky(dictionary, word, &x) != 0)
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!", "Word not found!");
 	else
 	if(btsel(dictionary,word,mean,100000,&size)==0){
@@ -38,21 +38,30 @@ void deleteWord(GtkWidget widget, gpointer window){
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
 
-	image = gtk_image_new_from_file("../Img/kaori4.jpg");
-	gtk_widget_set_name(image, "imgDel");
+	if(theme == 1){
+		image = gtk_image_new_from_file("../Img/kaori4.jpg");
+		gtk_widget_set_name(image, "imgDel");
+	}
+	if(theme == 2){
+		image = gtk_image_new_from_file("../Img/tfwb7.jpg");
+		gtk_widget_set_name(image, "imgDel");
+	}
 	gtk_container_add(GTK_CONTAINER(fixed), image);
 
 	label = gtk_label_new("Input:");
 	gtk_fixed_put(GTK_FIXED(fixed), label, 30, 30);
 
 	entry = gtk_entry_new();
-	gtk_widget_set_name(entry, "entry");
+	if(theme == 1) gtk_widget_set_name(entry, "entry");
+	if(theme == 2) gtk_widget_set_name(entry, "entry");
 	gtk_fixed_put(GTK_FIXED(fixed), entry, 100, 25);
 	gtk_widget_set_size_request(entry, 200, 30);
-	gtk_entry_set_max_length(GTK_ENTRY(entry),100);
+	gtk_entry_set_max_length(GTK_ENTRY(entry),50);
+	gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Enter word here");
 
 	button1 = gtk_button_new_with_label("Delete");
-	gtk_widget_set_name(button1, "buttonDel");
+	if(theme == 1) gtk_widget_set_name(button1, "buttonDel");
+	if(theme == 2) gtk_widget_set_name(button1, "buttonDel");
 	gtk_fixed_put(GTK_FIXED(fixed), button1, 350, 15);
 	gtk_widget_set_size_request(button1, 80, 30);
 

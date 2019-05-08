@@ -2,16 +2,13 @@ void removeAll();
 void library(GtkWidget widget, gpointer window);
 void getLabel(GtkButton *button);
 void initMainLibrary();
-void none();
 // char word[50];
 GtkWidget *fixed, *fixed2, *scrolling;
-GtkWidget *window1, *scrolling2[100], *button, *button2[100], /**fixed,*/ /**fixed2,*/ *fixed3, *label[100], *image;
+GtkWidget *window1, *scrolling2[100], *button, *buttonArr1[100], /**fixed,*/ /**fixed2,*/ *fixed3, *labelArr[100], *image;
 char mean[100000];
-int count = 0, size;
+int count = 0;
 char* x = NULL;
 char test[50];
-
-void none(){}
 
 void removeAll(){
 	char word[50];
@@ -23,9 +20,9 @@ void removeAll(){
     while(btseln(libraryTree, word, x, 0, &size) == 0) bdelky(libraryTree, word);
 }
 
-void getLabel(GtkButton *button2){
+void getLabel(GtkButton *buttonArr1){
     char word[50];
-    strcpy(word, gtk_button_get_label(button2));
+    strcpy(word, gtk_button_get_label(buttonArr1));
     strcpy(test, word);
     BTint x;
     bfndky(libraryTree, word, &x);
@@ -41,9 +38,9 @@ void initMainLibrary(){
         btsel(dictionary, word, mean, 100000, &size);
         gtk_fixed_move(GTK_FIXED(fixed2), scrolling2[count], 0, 120*count);
         gtk_widget_set_size_request(scrolling2[count], 250, 100);
-		gtk_label_set_text(GTK_LABEL(label[count]), mean);
-        gtk_button_set_label(GTK_BUTTON(button2[count]), word);
-        g_signal_connect(button2[count], "clicked", G_CALLBACK(getLabel), button2[count]);
+		gtk_label_set_text(GTK_LABEL(labelArr[count]), mean);
+        gtk_button_set_label(GTK_BUTTON(buttonArr1[count]), word);
+        g_signal_connect(buttonArr1[count], "clicked", G_CALLBACK(getLabel), buttonArr1[count]);
         count++;
     }
     gtk_container_remove(GTK_CONTAINER(fixed2), scrolling2[count]);
@@ -56,13 +53,14 @@ void library(GtkWidget widget, gpointer window){
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window1), "Library");
-	gtk_window_set_default_size(GTK_WINDOW(window1), 600, 500);
+	gtk_window_set_default_size(GTK_WINDOW(window1), 600, 530);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
 
-	image = gtk_image_new_from_file("../Img/tsubaki.jpg");//them anh tu file
+	if(theme == 1) image = gtk_image_new_from_file("../Img/tsubaki.jpg");//them anh tu file
+    if(theme == 2) image = gtk_image_new_from_file("../Img/tfwb8.jpg");
 	gtk_container_add(GTK_CONTAINER(fixed), image);
 
 	button = gtk_button_new_with_label("Remove all");
@@ -86,14 +84,14 @@ void library(GtkWidget widget, gpointer window){
         gtk_widget_set_size_request(scrolling2[count], 250, 100);
         fixed3 = gtk_fixed_new();
 		gtk_container_add(GTK_CONTAINER(scrolling2[count]), fixed3);
-		label[count] = gtk_label_new(mean);
-		gtk_fixed_put(GTK_FIXED(fixed3), label[count], 0, 35);
-        button2[count] = gtk_button_new();
-        gtk_button_set_label(GTK_BUTTON(button2[count]) , word);
-        gtk_fixed_put(GTK_FIXED(fixed3), button2[count], 0, 0);
-        gtk_widget_set_size_request(button2[count], 250, 30);
-        gtk_widget_set_name(button2[count], "buttonLibrary");
-        g_signal_connect(button2[count], "clicked", G_CALLBACK(getLabel), button2[count]);
+		labelArr[count] = gtk_label_new(mean);
+		gtk_fixed_put(GTK_FIXED(fixed3), labelArr[count], 0, 35);
+        buttonArr1[count] = gtk_button_new();
+        gtk_button_set_label(GTK_BUTTON(buttonArr1[count]) , word);
+        gtk_fixed_put(GTK_FIXED(fixed3), buttonArr1[count], 0, 0);
+        gtk_widget_set_size_request(buttonArr1[count], 250, 30);
+        gtk_widget_set_name(buttonArr1[count], "buttonLibrary");
+        g_signal_connect(buttonArr1[count], "clicked", G_CALLBACK(getLabel), buttonArr1[count]);
         count++;
     }
     count = 0;

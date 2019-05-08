@@ -46,14 +46,14 @@ typedef struct dllist {
 } *Dllist;
 
 extern Dllist new_dllist();
-extern free_dllist(Dllist);
+extern int free_dllist(Dllist);
 
-extern dll_append(Dllist, Jval);
-extern dll_prepend(Dllist, Jval);
-extern dll_insert_b(Dllist, Jval);
-extern dll_insert_a(Dllist, Jval);
+extern int dll_append(Dllist, Jval);
+extern int dll_prepend(Dllist, Jval);
+extern int dll_insert_b(Dllist, Jval);
+extern int dll_insert_a(Dllist, Jval);
 
-extern dll_delete_node(Dllist);
+extern int dll_delete_node(Dllist);
 extern int dll_empty(Dllist);
 
 extern Jval dll_val(Dllist);
@@ -65,8 +65,8 @@ extern Jval dll_val(Dllist);
 #define dll_nil(d) (d)
 
 #define dll_traverse(ptr, list) \
-  for (ptr = list->flink; ptr != list; ptr = ptr->flink)
+  for (ptr = dll_first(list); ptr != dll_nil(list); ptr = dll_next(ptr))
 #define dll_rtraverse(ptr, list) \
-  for (ptr = list->blink; ptr != list; ptr = ptr->blink)
+  for (ptr = dll_last(list); ptr != dll_nil(list); ptr = dll_prev(ptr))
 
 #endif
