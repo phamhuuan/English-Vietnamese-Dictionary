@@ -220,7 +220,7 @@
 }
 
 #window1Theme2{
-    background: #fcf5fd;
+    background: #a398a1;
 }
 
 #buttonSearchTheme2{
@@ -230,4 +230,21 @@
 
 #buttonSearchTheme2:hover{
     opacity: 0.1;
+}
+
+#entrySetting{
+    opacity: 0;
+}
+
+#initHideSetting{
+    opacity: 0;
+}
+
+#error{
+    color: red;
+    font-size: 12px;
+}
+
+#ok{
+    color: green;
 }

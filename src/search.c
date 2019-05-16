@@ -1,157 +1,93 @@
-static char code[128] = {0};
 GtkListStore *list;
+GtkWidget *window2;
 
-int prefix(const char *big, const char *small);
-int btfind(char *word, BTA* file);
-int commond_char(char * str1, char * str2, int start);
+int btfind(char *word, BTA *file);
 void jrb_to_list(JRB nextWordArray);
-int insert_insoundexlist(char *soundexlist , char *newword,  char *word, char *soundexWord);
-static void search(GtkWidget *w, gpointer data);
-void suggest(char * word, gboolean Tab_pressed);
-gboolean search_suggest(GtkWidget * entry, GdkEvent * event, gpointer No_need);
-static void edit(GtkWidget *w, gpointer data);
+void search(GtkWidget *w, gpointer data);
+void suggest(char *word, gboolean Tab_pressed);
+void search_suggest(GtkWidget *entry, GdkEvent *event);
+void edit(GtkWidget *w, gpointer data);
+void cfedit(GtkWidget *w, gpointer data);
 void addRemoveLibrary(GtkWidget *w, gpointer data);
 void searchWord(GtkWidget widget, gpointer window);
-
-const char* soundex(const char *s){
-	static char out[5];
-	int c, prev, i;
-
-	out[0] = out[4] = 0;
-	if(!s || !*s) return out;
-
-	out[0] = *s++;
-
-	/* first letter, though not coded, can still affect next letter: Pfister */
-	prev = code[(int)out[0]];
-	for(i = 1; *s && i < 4; s++){
-		if((c = code[(int) * s]) == prev) continue;
-		if(c == -1) prev = 0;	/* vowel as separator */
-		else if(c > 0){
-			out[i++] = c + '0';
-			prev = c;
-		}
-	}
-	while(i < 4) out[i++] = '0';
-	return out;
-}
-
-int prefix(const char *big, const char *small){// tra lai 1 neu giong prefix, 0 neu nguoc lai
-	int small_len = strlen(small);
-	int big_len = strlen(big);
-	int i;
-	if(big_len < small_len)
-		return 0;
-	for(i = 0; i < small_len; i++)
-		if(big[i] != small[i])
-			return 0;
-	return 1;    
-}
-
-int commond_char(char * str1, char * str2, int start){
-	int i;
-	int slen1 = strlen(str1);
-	int slen2 = strlen(str2);
-	int slen  = (slen1 < slen2) ? slen1 : slen2;
-	for( i = start; i < slen; i++)
-		if(str1[i] != str2[i])
-			return i;
-	return i;
-}
 
 void jrb_to_list(JRB nextWordArray){
    	GtkTreeIter Iter;
    	JRB tmp;
    	int max = 8;
    	jrb_traverse(tmp, nextWordArray){
-     	gtk_list_store_append(GTK_LIST_STORE(list), &Iter);
-    	gtk_list_store_set(GTK_LIST_STORE(list), &Iter, 0, jval_s(tmp->key), -1 );
+     	gtk_list_store_append(list, &Iter);
+    	gtk_list_store_set(list, &Iter, 0, jval_s(tmp->key), -1 );
  		if(max-- < 1)
    			return;
     }
 }
 
-int insert_insoundexlist(char *soundexlist , char *newword,  char *word, char *soundexWord){// tao newword voi ma soundex
-	if(strcmp(soundexWord, soundex(newword)) == 0){
-		if(strcmp(newword, word) != 0){
-			strcat(soundexlist, newword);
-			strcat(soundexlist, "\n");
-			return 1;
-		}
-	}
-	return 0;
-}
-
 void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung JRB to list ~
-	char nextword[100], prevword[100];
-	int i, NumOfCommondChar, minNumOfCommondChar = 1000;
-	int max;
+	char nextword[100], tmpword[100];
+	int i;
+	int max, check;
+	char soundexList[] = "Did you mean";
 	GtkTreeIter Iter;
-	JRB tmp, nextWordArray = make_jrb();
-	BTint value, existed = 0;
+	BTint value, found = 0;
 	strcpy(nextword, word);
-	int wordlen = strlen(word);
+	setTextView("", GTK_TEXT_VIEW(textView));
 	gtk_list_store_clear(GTK_LIST_STORE(list));
-	if(bfndky(dictionary, word, &value) ==  0){ // tim word trong dictionary, value la gia tri cua 'word' tim duoc
-		existed = 1;
-		gtk_list_store_append(GTK_LIST_STORE(list), &Iter);
-		gtk_list_store_set(GTK_LIST_STORE(list), &Iter, 0, nextword, -1 ); // neu dung thi ok
+	if(bfndky(dictionary, word, &value) ==  0){
+		gtk_list_store_append(list, &Iter);
+		gtk_list_store_set(list, &Iter, 0, nextword, -1);
+		found = 1;
 	}
-	if(!existed)
-		btins(dictionary, nextword, "", 1); // chen key va data vao B-tree, o lay chen blank vao !
-
-	for(i = 0; i < 1945; i++){
-		bnxtky(dictionary, nextword, &value);  // tim 'key' tiep theo
-		if(prefix(nextword, word)){ // tim nhung tu co prefix giong
-			jrb_insert_str(nextWordArray, strdup(nextword), JNULL);  // va chen vao array nextword (de show ra list -> jrb_to_list)
+	else
+		btins(dictionary, nextword, "", 1);
+	max = 10;
+	while(bnxtky(dictionary, nextword, &value) == 0 && max){
+		if(strncmp(nextword, word, strlen(word)) == 0){
+			gtk_list_store_append(list, &Iter);
+			gtk_list_store_set(list, &Iter, 0, nextword, -1);
+			if(--max == 9) strcpy(tmpword, nextword);
 		}
 		else break;
 	}
-
-	if(!existed && Tab_pressed){// an tab de ra tu goi y xD!
-		if(jrb_empty(nextWordArray)){
-			char soundexlist[1000] = "Ý bạn là:\n";
-			char soundexWord[50];
-			strcpy(nextword, word);
-			strcpy(prevword, word);
-			strcpy(soundexWord, soundex(word)); // soundex dung de tim tu 'xung quanh'
-			max = 5;
-			for(i = 0; (i < 10000) && max; i++){
-				if(bprvky(dictionary , prevword, &value) == 0)
-					if(insert_insoundexlist(soundexlist, prevword, word, soundexWord))
-						max--;
-			}
-			max = 5;
-			for(i = 0; (i < 10000) && max; i++){
-				if(bnxtky(dictionary, nextword, &value) == 0)
-					if(insert_insoundexlist(soundexlist, nextword, word, soundexWord))
-						max--;
-			}
-			setTextView(soundexlist, GTK_TEXT_VIEW(textView));
+	if(!found) btdel(dictionary, word);
+	if(Tab_pressed){
+		if(max != 10){
+			gtk_entry_set_text(GTK_ENTRY(entry_search), tmpword);
+			gtk_editable_set_position(GTK_EDITABLE(entry_search), strlen(tmpword));
 		}
 		else{
-			strcpy(nextword, jval_s(jrb_first(nextWordArray)->key));
-			jrb_traverse(tmp, nextWordArray){
-				NumOfCommondChar = commond_char(nextword, jval_s(tmp->key), wordlen);
-				if(minNumOfCommondChar > NumOfCommondChar)
-					minNumOfCommondChar = NumOfCommondChar;
+			char soundexWord[60], soundexNext[600], soundexPrev[60], soundexTmp[60], word2[60];
+			strcpy(soundexWord, soundex(word));
+			strcpy(word2, word);
+			strcat(soundexWord, word);
+			strcpy(soundexNext, soundexWord);
+			strcpy(soundexPrev, soundexWord);
+			max = 8;
+			if(bfndky(soundexTree, soundexWord, &value) ==  0){
+				found = 1;
+				gtk_list_store_append(list, &Iter);
+				gtk_list_store_set(list, &Iter, 0, word, -1 );
 			}
-
-			if((minNumOfCommondChar != 1000) && (minNumOfCommondChar > wordlen)) {
-				nextword[NumOfCommondChar] = '\0';
-				gtk_entry_set_text(GTK_ENTRY(entry_search), nextword);
-				gtk_editable_set_position(GTK_EDITABLE(entry_search), NumOfCommondChar);
-			}
+			else
+				binsky(soundexTree, soundexWord, 0);
+			while(max){
+				check = max;
+				if(bnxtky(soundexTree, soundexNext, &value) == 0){
+					for(i = 4; i < strlen(soundexNext); i++){
+						soundexTmp[i-4] = soundexNext[i];
+					}soundexTmp[i-4] = '\0';
+					max--;
+				}
+				strcat(soundexList, "\n");
+				strcat(soundexList, soundexTmp);
+				if(check == max) break;
+			}setTextView(soundexList, GTK_TEXT_VIEW(textView));
+			if(!found) bdelky(soundexTree, soundexWord);
 		}
 	}
-	else
-		jrb_to_list(nextWordArray);
-	if(!existed)
-		btdel(dictionary, word);
-	jrb_free_tree(nextWordArray);
 }
 
-gboolean search_suggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){// gioi han ky tu, chi nhan alphabelt va tab
+void search_suggest(GtkWidget *entry, GdkEvent *event){// gioi han ky tu, chi nhan alphabelt va tab
 	GdkEventKey *keyEvent = (GdkEventKey*)event;
 	char word[50];
 	int len;
@@ -169,10 +105,9 @@ gboolean search_suggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){/
 		}
 		suggest(word, FALSE);
 	}
-	return FALSE;
 }
 
-static void search(GtkWidget *w, gpointer data){
+void search(GtkWidget *w, gpointer data){
 	GtkWidget *entry1 = ((GtkWidget**)data)[0];
 	GtkWidget *window1 = ((GtkWidget**)data)[1];
 	GtkWidget *button4 = ((GtkWidget**)data)[3];
@@ -193,38 +128,34 @@ static void search(GtkWidget *w, gpointer data){
 	if(bfndky(libraryTree, word, &x) != 0) gtk_button_set_label(GTK_BUTTON(button4), "Add to library");
 	else gtk_button_set_label(GTK_BUTTON(button4), "Remove from library");
 
-	
 	//Luu vao file history
+	if(bfndky(dictionary, word, &x) == 0){
+		if(bfndky(historyTree, word, &x) != 0)
+			binsky(historyTree, word, 0);
+		
+		for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
+		
+		fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);fclose(fileHistory);
 
-	if(bfndky(historyTree, word, &x) != 0)
-		binsky(historyTree, word, 0);
-
-	// btsel(dictionary, word, mean, 100000, &size);
-	// g_print("%d\n",btins(historyTree, word, mean, strlen(mean) + 1));
-
-	for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
-	
-	fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);fclose(fileHistory);
-
-	fileHistory = fopen("../data/history.dat", "rb");
-	linkedList = new_dllist();int temp = 0;
-	while(fscanf(fileHistory, "%s", wordHistory) != EOF){
-		strcpy(wordTmp[temp++], wordHistory);//g_print("%s\n", wordHistory);
-	}
-	fclose(fileHistory);
-	for(int i = 0; i < temp; i++) dll_append(linkedList, new_jval_s(wordTmp[i]));
-
-	dll_traverse(node, linkedList)
-		if(strcmp(jval_s(node->val), word) == 0 && node != linkedList->blink){
-			dll_delete_node(node);
-			break;
+		fileHistory = fopen("../data/history.dat", "rb");
+		linkedList = new_dllist();int temp = 0;
+		while(fscanf(fileHistory, "%s", wordHistory) != EOF){
+			strcpy(wordTmp[temp++], wordHistory);//g_print("%s\n", wordHistory);
 		}
-	fileHistory = fopen("../data/history.dat", "wb");
-	dll_traverse(node, linkedList)
-		fprintf(fileHistory, "%s\n", jval_s(node->val));
-	fclose(fileHistory);
-	free_dllist(linkedList);
+		fclose(fileHistory);
+		for(int i = 0; i < temp; i++) dll_append(linkedList, new_jval_s(wordTmp[i]));
 
+		dll_traverse(node, linkedList)
+			if(strcmp(jval_s(node->val), word) == 0 && node != linkedList->blink){
+				dll_delete_node(node);
+				break;
+			}
+		fileHistory = fopen("../data/history.dat", "wb");
+		dll_traverse(node, linkedList)
+			fprintf(fileHistory, "%s\n", jval_s(node->val));
+		fclose(fileHistory);
+		free_dllist(linkedList);
+	}
 	return;
 }
 
@@ -239,10 +170,10 @@ int btfind(char *word, BTA* file){// dung cho ham search
     	return 0;
 }
 
-static void edit(GtkWidget *w, gpointer data){// ham chuc nang edit
-	GtkWidget *entry1= ((GtkWidget**)data)[0];
-	GtkWidget *window1=((GtkWidget**)data)[1];
-	GtkWidget *edit_view=((GtkWidget**)data)[2];
+void edit(GtkWidget *w, gpointer data){// ham chuc nang edit
+	GtkWidget *entry1 = ((GtkWidget**)data)[0];
+	GtkWidget *window1 =((GtkWidget**)data)[1];
+	GtkWidget *edit_view =((GtkWidget**)data)[2];
 
 	BTint x;
 
@@ -269,20 +200,59 @@ static void edit(GtkWidget *w, gpointer data){// ham chuc nang edit
 
 	if(word[0] == '\0' || mean[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "No part is left blank!");
-	else if(bfndky(dictionary, word, &x ) != 0)
+	else if(bfndky(dictionary, word, &x) != 0)
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error", "Word not found!");
 	else{
-		if(btupd(dictionary, word, mean, strlen(mean) + 1) == 1)
+		if(btupd(dictionary, word, mean, strlen(mean) + 1) != 0)
 			Message(GTK_WIDGET(window1),GTK_MESSAGE_ERROR, "Error","Can not update!");
 		else
 			Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Updated!");
 	}
+	gtk_window_close(GTK_WINDOW(window2));
+}
+
+void cfedit(GtkWidget *w, gpointer data){
+	GtkWidget *fixed;
+	GtkWidget *button1, *button2, *label;
+	
+	window2 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(window2), "");
+	gtk_window_set_default_size(GTK_WINDOW(window2), 200, 100);
+	gtk_window_set_position(GTK_WINDOW(window2), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(window2), FALSE);
+
+	fixed = gtk_fixed_new();
+	gtk_container_add(GTK_CONTAINER(window2), fixed);
+
+	label = gtk_label_new("Are you sure?");
+	gtk_fixed_put(GTK_FIXED(fixed), label, 60, 20);
+
+	button1 = gtk_button_new_with_label("Yes");
+	gtk_fixed_put(GTK_FIXED(fixed), button1, 30, 50);
+	gtk_widget_set_size_request(button1, 60, 30);
+
+	button2 = gtk_button_new_with_label("No");
+	gtk_fixed_put(GTK_FIXED(fixed), button2, 110, 50);
+	gtk_widget_set_size_request(button2, 60, 30);
+
+	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(edit), data);
+	g_signal_connect(G_OBJECT(button2), "clicked", G_CALLBACK(close_window), window2);
+
+	gtk_widget_show_all(window2);
 }
 
 void addRemoveLibrary(GtkWidget *w, gpointer data){
 	GtkWidget *entry1 = ((GtkWidget**)data)[0];
 	GtkWidget *window1 =((GtkWidget**)data)[1];
 	GtkWidget *button4 = ((GtkWidget**)data)[3];
+	fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+    char tmp[50];
+    fscanf(fileIsLogIn, "%d %s", &isLogin, tmp);
+    fclose(fileIsLogIn);
+    if(isLogin == 0){
+        Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Notice","You need login to use this function");
+        return;
+    }
 
 	BTint x;
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
@@ -314,10 +284,11 @@ void searchWord(GtkWidget widget, gpointer window){
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(theme == 1) gtk_widget_set_name(window1, "window1");
-	if(theme == 1) gtk_widget_set_name(window1, "window1Theme2");
+	if(theme == 2) gtk_widget_set_name(window1, "window1Theme2");
 	gtk_window_set_title(GTK_WINDOW(window1), "Search");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 430);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(window1), FALSE);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
@@ -329,14 +300,14 @@ void searchWord(GtkWidget widget, gpointer window){
 	gtk_widget_set_size_request(entry_search, 300, 30);
 	gtk_fixed_put(GTK_FIXED(fixed), entry_search, 100, 25);
 	gtk_entry_set_max_length(GTK_ENTRY(entry_search), 50);
+	gtk_entry_set_placeholder_text(GTK_ENTRY(entry_search), "Enter word here");
 	if(theme == 1) gtk_widget_set_name(entry_search, "entry_search");
 	if(theme == 2) gtk_widget_set_name(entry_search, "entry_searchTheme2");
 
 	GtkEntryCompletion *comple = gtk_entry_completion_new();
 	gtk_entry_completion_set_text_column(comple, 0);
-	list = gtk_list_store_new(10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	list = gtk_list_store_new(1, G_TYPE_STRING);
 	gtk_entry_completion_set_model(comple, GTK_TREE_MODEL(list));
-	gtk_entry_set_placeholder_text(GTK_ENTRY(entry_search), "Enter word here");
 	gtk_entry_set_completion(GTK_ENTRY(entry_search), comple);
 
 	button1 = gtk_button_new_with_label("Search");
@@ -389,7 +360,7 @@ void searchWord(GtkWidget widget, gpointer window){
 	g_signal_connect(G_OBJECT(entry_search), "activate", G_CALLBACK(search), data);//khi nhap tu xong an enter thi search
 	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(search), data);
 	g_signal_connect(G_OBJECT(button2), "clicked", G_CALLBACK(close_window), window1);
-	g_signal_connect(G_OBJECT(button3), "clicked", G_CALLBACK(edit), data);
+	g_signal_connect(G_OBJECT(button3), "clicked", G_CALLBACK(cfedit), data);
 	g_signal_connect(G_OBJECT(button4), "clicked", G_CALLBACK(addRemoveLibrary), data);
 	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 

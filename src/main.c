@@ -15,9 +15,10 @@
 #include "setTextView.c"
 #include "message.c"
 #include "closeWindow.c"
+#include "copyFile.c"
 #include "tutorial.c"
 #include "myCSS.c"
-#include "textToBtree.c"
+#include "init.c"
 #include "search.c"
 #include "team.c"
 #include "library.c"
@@ -34,37 +35,55 @@ ALLEGRO_SAMPLE_INSTANCE* instance;
 BTA *dictionary = NULL;
 BTA *libraryTree = NULL;
 BTA *historyTree = NULL;
+BTA *soundexTree = NULL;
 int i = 0;
 FILE *fileSettingMusic;
 FILE *fileHistory;
 FILE *fileSettingTheme;
 FILE *fileUser;
 FILE *fileIsLogIn;
+FILE *fileKeepLogIn;
 char wordHistory[50];
 char wordTmp[1000][50];
 int size;
 int theme;
 int isLogin;
+int keepLogin;
 
 Dllist node, linkedList;
+GtkWidget *labelMain;
 
 GtkWidget *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
 GtkWidget *window, *image;
 SettingMusic s;//tao hai bien int mute, float vol rieng cung dc nhung neu dung fread fwrite thi can struct
+USER *user, userTmp;
 
-int main(int argc, char *argv[]){
-	fileIsLogIn = fopen("../data/isLogin.dat", "rb");
-	fscanf(fileIsLogIn, "%d", &isLogin);
+void activate(GtkApplication *app, gpointer user_data);
+
+void activate(GtkApplication *app, gpointer user_data){
+    init();
+	fileKeepLogIn = fopen("../data/keepLogin.dat", "rb");
+	fscanf(fileKeepLogIn, "%d", &keepLogin);
+    fclose(fileKeepLogIn);
+    fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+	fscanf(fileIsLogIn, "%d %s", &isLogin, username);
 	fclose(fileIsLogIn);
 	btinit();
 	historyTree = btopn("../data/historyBtree.dat", 0, 1);
-	if(historyTree == NULL) btcrt("../data/historyBtree.dat", 0, 1);
+	// if(historyTree == NULL) btcrt("../data/historyBtree.dat", 0, 1);
 	btinit();
 	dictionary = btopn("../data/evdic.dat", 0, 1);//cho phep update va share
+	soundexTree = btopn("../data/soundex.dat", 0, 1);
 	if(dictionary == NULL){
-		g_print("Waiting for creating data...\n");
-		convert_text_to_bt("../data/AnhViet.txt");
+		g_print("Waiting for creating dictionary data...\n");
+		initDic("../data/AnhViet.txt");
 		dictionary = btopn("../data/evdic.dat", 0, 1);
+		g_print("Done!\n");
+	}
+	if(soundexTree == NULL){
+		g_print("Waiting for creating soundex data...\n");
+		initSoundex("../data/AnhViet.txt");
+		soundexTree = btopn("../data/soundex.dat", 0, 1);
 		g_print("Done!\n");
 	}
 	btinit();
@@ -76,7 +95,7 @@ int main(int argc, char *argv[]){
 	GtkWidget *image2, *fixed;
 	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10;
 
-	gtk_init(&argc, &argv);//khoi tao gtk
+	// gtk_init(&argc, &argv);//khoi tao gtk
 
 	al_install_audio();
 	al_init_acodec_addon();
@@ -100,6 +119,7 @@ int main(int argc, char *argv[]){
 	gtk_window_set_title(GTK_WINDOW(window), "English-Vietnamese Dictionary");//set the title of the GtkWindow
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);//set size of GtkWindow
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//Cua so se xuat hien o giua man hinh
+	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
 	/*Tao hinh nen*/
 	fixed = gtk_fixed_new();//create new fixed
@@ -109,6 +129,18 @@ int main(int argc, char *argv[]){
 	gtk_container_add(GTK_CONTAINER(fixed), image);
 
 	myCSS();
+    if(keepLogin == 1){
+        labelMain = gtk_label_new("");
+		gchar *str = g_strdup_printf("%s", username);
+    	gtk_label_set_text(GTK_LABEL(labelMain), str);
+    }
+    else{
+        labelMain = gtk_label_new("");
+        fileIsLogIn = fopen("../data/isLogin.dat", "wb");
+        fprintf(fileIsLogIn, "%d %s", 0, "NONE");
+        fclose(fileIsLogIn);
+    }
+	gtk_fixed_put(GTK_FIXED(fixed), labelMain, 500, 20);
 
 	button1 = gtk_button_new_with_label("Tutorial");//tao nut
 	gtk_widget_set_name(button1, "button1");//dung cho myCSS
@@ -185,6 +217,17 @@ int main(int argc, char *argv[]){
 	gtk_main();
 	btcls(historyTree);
 	btcls(libraryTree);
+	btcls(soundexTree);
 	btcls(dictionary);
-	return 0;
+}
+
+int main(int argc, char **argv){
+  GtkApplication *app;
+  int status;
+
+  app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+  g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+  status = g_application_run(G_APPLICATION(app), argc, argv);
+  g_object_unref(app);
+  return status;
 }

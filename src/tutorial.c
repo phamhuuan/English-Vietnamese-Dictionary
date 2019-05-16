@@ -176,6 +176,7 @@ void tutorial(GtkWidget widget, gpointer window){
 	gtk_window_set_title(GTK_WINDOW(tutorialWindow), "Tutorial");//set the title of the GtkWindow
 	gtk_window_set_default_size(GTK_WINDOW(tutorialWindow), 400, 600);//set size of GtkWindow
 	gtk_window_set_position(GTK_WINDOW(tutorialWindow), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(tutorialWindow), FALSE);
 
 	tutorialFixed = gtk_fixed_new();//create new fixed
 	gtk_container_add(GTK_CONTAINER(tutorialWindow), tutorialFixed);//add widget to container

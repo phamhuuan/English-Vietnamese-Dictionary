@@ -2,7 +2,7 @@ GtkWidget *fixed /*, *image*/;
 GtkWidget *button1,*window1,*label,*button2,*button3,*button4,*button5,*label2;
 
 void history();
-gboolean historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need);
+void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need);
 void suggestHistory(char *word, gboolean Tab_pressed);
 void delete(GtkWidget *w, gpointer data);
 void deleteAll(GtkWidget *w, gpointer data);
@@ -25,7 +25,7 @@ void suggestHistory(char *word, gboolean Tab_pressed){// suggest, dua vao prefix
 	jrb_free_tree(nextWordArray);
 }
 
-gboolean historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){// gioi han ky tu, chi nhan alphabelt va tab
+void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){// gioi han ky tu, chi nhan alphabelt va tab
 	GdkEventKey *keyEvent = (GdkEventKey*)event;
 	char word[50];//text entry nhap nhieu qua se bi loi vi tran bo nho cua bien word trong ham nay va newWord, prevWord o ham suggestHistory
 	int len;
@@ -43,7 +43,6 @@ gboolean historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){/
 		}
 		suggestHistory(word, FALSE);
 	}
-	return FALSE;
 }
 
 void delete(GtkWidget *w, gpointer data){
@@ -90,9 +89,9 @@ void delete(GtkWidget *w, gpointer data){
 void deleteAll(GtkWidget *w, gpointer data){
 	GtkWidget *window1 = ((GtkWidget**)data)[1];
 
-	fileHistory = fopen("../data/history.dat", "wb");
+	fileHistory = fopen("../data/history.dat", "w+b");
 	fclose(fileHistory);
-	fileHistory = fopen("../data/historyBtree.dat", "wb");
+	fileHistory = fopen("../data/historyBtree.dat", "w+b");
 	fclose(fileHistory);
 	Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Removed!");
 }
@@ -125,24 +124,37 @@ void searchHistory(GtkWidget *w, gpointer data){
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	gtk_label_set_text(GTK_LABEL(label2), "Meaning:");
 	char word[50];
+	BTint x;
 
 	strcpy(word, a);
 	if(word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
+		if(bfndky(historyTree, word, &x) != 0){
+			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
+			return;
+		}
 		int result = btfind(word, dictionary);
 		if(result == 0)
 			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
 	}
-	return;
 }
 
 void history(){
+	fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+    char tmp[50];
+    fscanf(fileIsLogIn, "%d %s", &isLogin, tmp);
+    fclose(fileIsLogIn);
+    if(isLogin == 0){
+        Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Notice","You need login to use this function");
+        return;
+    }
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_widget_set_name(window1, "windowHistory");
 	gtk_window_set_title(GTK_WINDOW(window1), "History");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 750, 430);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(window1), FALSE);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);

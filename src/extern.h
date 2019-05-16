@@ -1,6 +1,7 @@
 extern BTA *dictionary;
 extern BTA *libraryTree;
 extern BTA *historyTree;
+extern BTA *soundexTree;
 extern const gchar *a, *b;
 
 extern int size;
@@ -10,7 +11,7 @@ extern ALLEGRO_SAMPLE *sample;
 extern ALLEGRO_SAMPLE_INSTANCE* instance;
 
 extern GtkWidget *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
-extern GtkWidget *window, *image;
+extern GtkWidget *window, *image, *labelMain;
 
 extern int i;
 
@@ -19,6 +20,7 @@ extern FILE *fileHistory;
 extern FILE *fileSettingTheme;
 extern FILE *fileUser;
 extern FILE *fileIsLogIn;
+extern FILE *fileKeepLogIn;
 
 extern char wordHistory[50];
 extern char wordTmp[1000][50];
@@ -40,4 +42,4 @@ typedef struct User{
 }USER;
 
 extern USER *user, userTmp;
-extern int isLogIn;
+extern int isLogin, keepLogin;

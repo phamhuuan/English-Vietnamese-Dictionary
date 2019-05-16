@@ -1,5 +1,5 @@
 void removeAll();
-void library(GtkWidget widget, gpointer window);
+void library(GtkWidget widget);
 void getLabel(GtkButton *button);
 void initMainLibrary();
 // char word[50];
@@ -47,7 +47,15 @@ void initMainLibrary(){
     count = 0;
 }
 
-void library(GtkWidget widget, gpointer window){
+void library(GtkWidget widget){
+    fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+    char tmp[50];
+    fscanf(fileIsLogIn, "%d %s", &isLogin, tmp);
+    fclose(fileIsLogIn);
+    if(isLogin == 0){
+        Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Notice","You need login to use this function");
+        return;
+    }
     char word[50];
 	myCSS();
 
@@ -55,6 +63,7 @@ void library(GtkWidget widget, gpointer window){
 	gtk_window_set_title(GTK_WINDOW(window1), "Library");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 600, 530);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(window1), FALSE);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);

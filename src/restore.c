@@ -1,22 +1,16 @@
 void restore();
 
 void restore(){
-	gtk_spinner_start(GTK_SPINNER(spinner));
+	fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+    char tmp[50];
+    fscanf(fileIsLogIn, "%d %s", &isLogin, tmp);
+    fclose(fileIsLogIn);
+    if(isLogin == 0){
+        Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Notice","You need login to use this function");
+        return;
+    }
 	btcls(dictionary);
-	FILE *fin, *fout;
-	fin = fopen("../data/evdic2.dat", "rb");
-	fout = fopen("../data/evdic.dat", "wb");
-	
-	size_t n, m;
-    unsigned char buff[8192];
-    do{
-        n = fread(buff, 1, sizeof(buff), fin);
-        if(n) m = fwrite(buff, 1, n, fout);
-        else m = 0;
-    }while((n > 0) && (n == m));
-	fclose(fin);
-	fclose(fout);
+    copyFile("../data/evdic2.dat", "../data/evdic.dat");
 	dictionary = btopn("../data/evdic.dat", 0, 1);
-	gtk_spinner_stop(GTK_SPINNER(spinner));
 	Message(GTK_WIDGET(window),GTK_MESSAGE_INFO, "Success!","Restored!");
 }

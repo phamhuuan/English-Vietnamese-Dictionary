@@ -15,6 +15,7 @@ void team(GtkWidget widget, gpointer window){
 	if(theme == 2) gtk_window_set_title(GTK_WINDOW(window1), "About team");
 	gtk_window_set_default_size(GTK_WINDOW(window1), 500, 240);
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
+	gtk_window_set_resizable(GTK_WINDOW(window1), FALSE);
 
 	fixed = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(window1), fixed);
