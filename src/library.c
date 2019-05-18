@@ -8,7 +8,6 @@ GtkWidget *window1, *scrolling2[100], *button, *buttonArr1[100], /**fixed,*/ /**
 char mean[100000];
 int count = 0;
 char* x = NULL;
-char test[50];
 
 void removeAll(){
 	char word[50];
@@ -23,7 +22,6 @@ void removeAll(){
 void getLabel(GtkButton *buttonArr1){
     char word[50];
     strcpy(word, gtk_button_get_label(buttonArr1));
-    strcpy(test, word);
     BTint x;
     bfndky(libraryTree, word, &x);
     bdelky(libraryTree, word);

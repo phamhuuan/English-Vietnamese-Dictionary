@@ -51,7 +51,6 @@ void delete(GtkWidget *w, gpointer data){
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	char word[50];
-	BTint x;
 
 	strcpy(word, a);
 
@@ -59,12 +58,6 @@ void delete(GtkWidget *w, gpointer data){
 		Message(GTK_WIDGET(window1),GTK_MESSAGE_ERROR, "ERROR!","Input blank empty!");
 		return;
 	}
-	if(bfndky(libraryTree, word, &x) != 0){
-		Message(GTK_WIDGET(window1),GTK_MESSAGE_ERROR, "ERROR!","Word not found!");
-		return;
-	}
-	btdel(historyTree, word);
-
 	fileHistory = fopen("../data/history.dat", "rb");
 	linkedList = new_dllist();int temp = 0;
 	while(fscanf(fileHistory, "%s", wordHistory) != EOF){
@@ -90,8 +83,6 @@ void deleteAll(GtkWidget *w, gpointer data){
 	GtkWidget *window1 = ((GtkWidget**)data)[1];
 
 	fileHistory = fopen("../data/history.dat", "w+b");
-	fclose(fileHistory);
-	fileHistory = fopen("../data/historyBtree.dat", "w+b");
 	fclose(fileHistory);
 	Message(GTK_WIDGET(window1),GTK_MESSAGE_INFO, "Success!","Removed!");
 }
@@ -123,20 +114,21 @@ void searchHistory(GtkWidget *w, gpointer data){
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	gtk_label_set_text(GTK_LABEL(label2), "Meaning:");
-	char word[50];
-	BTint x;
+	char word[50], tmp[50];
+	int check = 0;
 
 	strcpy(word, a);
 	if(word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
-		if(bfndky(historyTree, word, &x) != 0){
-			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
-			return;
-		}
-		int result = btfind(word, dictionary);
-		if(result == 0)
-			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
+		fileHistory = fopen("../data/history.dat", "rb");
+		while(fscanf(fileHistory, "%s", tmp) != EOF){
+			if(strcmp(tmp, word) == 0){
+				btfind(word, dictionary);
+				check = 1;
+			}
+		}	
+		if(check == 0) Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!", "Word not found!");
 	}
 }
 

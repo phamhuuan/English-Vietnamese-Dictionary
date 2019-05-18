@@ -130,9 +130,6 @@ void search(GtkWidget *w, gpointer data){
 
 	//Luu vao file history
 	if(bfndky(dictionary, word, &x) == 0){
-		if(bfndky(historyTree, word, &x) != 0)
-			binsky(historyTree, word, 0);
-		
 		for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
 		
 		fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);fclose(fileHistory);
@@ -279,8 +276,6 @@ void addRemoveLibrary(GtkWidget *w, gpointer data){
 void searchWord(GtkWidget widget, gpointer window){
 	GtkWidget *fixed, *image;
 	GtkWidget *button1,*window1,*label,*button2,*button3,*button4,*label2;
-
-	myCSS();
 
 	window1 = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(theme == 1) gtk_widget_set_name(window1, "window1");

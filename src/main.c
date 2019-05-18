@@ -27,6 +27,7 @@
 #include "restore.c"
 #include "setting.c"
 #include "history.c"
+#include "sourceCode.c"
 
 //Khai bao
 const gchar *a, *b;
@@ -34,7 +35,6 @@ ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE_INSTANCE* instance;
 BTA *dictionary = NULL;
 BTA *libraryTree = NULL;
-BTA *historyTree = NULL;
 BTA *soundexTree = NULL;
 int i = 0;
 FILE *fileSettingMusic;
@@ -53,7 +53,7 @@ int keepLogin;
 Dllist node, linkedList;
 GtkWidget *labelMain;
 
-GtkWidget *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
+GtkWidget *view, *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
 GtkWidget *window, *image;
 SettingMusic s;//tao hai bien int mute, float vol rieng cung dc nhung neu dung fread fwrite thi can struct
 USER *user, userTmp;
@@ -69,9 +69,6 @@ void activate(GtkApplication *app, gpointer user_data){
 	fscanf(fileIsLogIn, "%d %s", &isLogin, username);
 	fclose(fileIsLogIn);
 	btinit();
-	historyTree = btopn("../data/historyBtree.dat", 0, 1);
-	// if(historyTree == NULL) btcrt("../data/historyBtree.dat", 0, 1);
-	btinit();
 	dictionary = btopn("../data/evdic.dat", 0, 1);//cho phep update va share
 	soundexTree = btopn("../data/soundex.dat", 0, 1);
 	if(dictionary == NULL){
@@ -86,16 +83,13 @@ void activate(GtkApplication *app, gpointer user_data){
 		soundexTree = btopn("../data/soundex.dat", 0, 1);
 		g_print("Done!\n");
 	}
-	btinit();
 	libraryTree = btopn("../data/library.dat", 0, 1);
 	fileSettingTheme = fopen("../data/settingTheme.dat", "rb");
     fscanf(fileSettingTheme, "%d", &theme);
     fclose(fileSettingTheme);
 
 	GtkWidget *image2, *fixed;
-	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10;
-
-	// gtk_init(&argc, &argv);//khoi tao gtk
+	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10, *button11;
 
 	al_install_audio();
 	al_init_acodec_addon();
@@ -107,7 +101,6 @@ void activate(GtkApplication *app, gpointer user_data){
 	al_set_sample_instance_playing(instance, true);
 	fileSettingMusic = fopen("../data/settingMusic.dat", "rb");
 	fscanf(fileSettingMusic, "%d %f", &s.mute, &s.vol);
-	// fread(&s, sizeof(s), 1, fileSettingMusic);
 	fclose(fileSettingMusic);
 	if(s.mute == 1) al_set_sample_instance_gain(instance, 0.0);
 	else al_set_sample_instance_gain(instance, s.vol);
@@ -142,17 +135,23 @@ void activate(GtkApplication *app, gpointer user_data){
     }
 	gtk_fixed_put(GTK_FIXED(fixed), labelMain, 500, 20);
 
-	button1 = gtk_button_new_with_label("Tutorial");//tao nut
-	gtk_widget_set_name(button1, "button1");//dung cho myCSS
+	button1 = gtk_button_new_with_label("Source code");//tao nut
+	gtk_widget_set_name(button1, "button2");//dung cho myCSS
 	gtk_fixed_put(GTK_FIXED(fixed), button1, 350, 160);//toa do
 	gtk_widget_set_size_request(button1, 110, 50);//size
-	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(tutorial), NULL);
+	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(sourceCode), NULL);
 
 	button10 = gtk_button_new_with_label("History");//tao nut
 	gtk_widget_set_name(button10, "button2");//dung cho myCSS
 	gtk_fixed_put(GTK_FIXED(fixed), button10, 480, 160);//toa do
 	gtk_widget_set_size_request(button10, 110, 50);//size
 	g_signal_connect(G_OBJECT(button10), "clicked", G_CALLBACK(history), NULL);
+
+	button11 = gtk_button_new_with_label("Tutorial");//tao nut
+	gtk_widget_set_name(button11, "button1");//dung cho myCSS
+	gtk_fixed_put(GTK_FIXED(fixed), button11, 350, 100);//toa do
+	gtk_widget_set_size_request(button11, 240, 50);//size
+	g_signal_connect(G_OBJECT(button11), "clicked", G_CALLBACK(tutorial), NULL);
 
 	button2 = gtk_button_new_with_label("Search word");
 	gtk_widget_set_name(button2, "button2");
@@ -215,7 +214,6 @@ void activate(GtkApplication *app, gpointer user_data){
 	
 	gtk_widget_show_all(window);
 	gtk_main();
-	btcls(historyTree);
 	btcls(libraryTree);
 	btcls(soundexTree);
 	btcls(dictionary);

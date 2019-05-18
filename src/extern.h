@@ -1,6 +1,5 @@
 extern BTA *dictionary;
 extern BTA *libraryTree;
-extern BTA *historyTree;
 extern BTA *soundexTree;
 extern const gchar *a, *b;
 
@@ -10,7 +9,7 @@ extern int theme;
 extern ALLEGRO_SAMPLE *sample;
 extern ALLEGRO_SAMPLE_INSTANCE* instance;
 
-extern GtkWidget *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
+extern GtkWidget *view, *textView, *buttonLibraryTextView, *view1, *view2, *about_dialog, *entry_search;
 extern GtkWidget *window, *image, *labelMain;
 
 extern int i;

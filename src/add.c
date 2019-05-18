@@ -89,7 +89,7 @@ void addWord(GtkWidget widget, gpointer window){
 	gtk_fixed_put(GTK_FIXED(fixed), button2, 560, 15);
 	gtk_widget_set_size_request(button2, 90, 30);
 
-	if(theme == 1) image = gtk_image_new_from_file("../Img/../Img/kousei.jpg.jpg");//them anh tu file
+	if(theme == 1) image = gtk_image_new_from_file("../Img/kousei.jpg");//them anh tu file
 	if(theme == 2) image = gtk_image_new_from_file("../Img/tfwb3.jpg");
 	gtk_fixed_put(GTK_FIXED(fixed), image, 450, 80);
 
