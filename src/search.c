@@ -1,29 +1,15 @@
 GtkListStore *list;
 GtkWidget *window2;
 
-int btfind(char *word, BTA *file);
-void jrb_to_list(JRB nextWordArray);
 void search(GtkWidget *w, gpointer data);
 void suggest(char *word, gboolean Tab_pressed);
-void search_suggest(GtkWidget *entry, GdkEvent *event);
+void searchSuggest(GtkWidget *entry, GdkEvent *event);
 void edit(GtkWidget *w, gpointer data);
 void cfedit(GtkWidget *w, gpointer data);
 void addRemoveLibrary(GtkWidget *w, gpointer data);
 void searchWord(GtkWidget widget, gpointer window);
 
-void jrb_to_list(JRB nextWordArray){
-   	GtkTreeIter Iter;
-   	JRB tmp;
-   	int max = 8;
-   	jrb_traverse(tmp, nextWordArray){
-     	gtk_list_store_append(list, &Iter);
-    	gtk_list_store_set(list, &Iter, 0, jval_s(tmp->key), -1 );
- 		if(max-- < 1)
-   			return;
-    }
-}
-
-void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung JRB to list ~
+void suggest(char * word, gboolean Tab_pressed){
 	char nextword[100], tmpword[100];
 	int i;
 	int max, check;
@@ -56,18 +42,15 @@ void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung
 			gtk_editable_set_position(GTK_EDITABLE(entry_search), strlen(tmpword));
 		}
 		else{
-			char soundexWord[60], soundexNext[600], soundexPrev[60], soundexTmp[60], word2[60];
+			char soundexWord[60], soundexNext[60], soundexPrev[60], soundexTmp[60], word2[60];
 			strcpy(soundexWord, soundex(word));
 			strcpy(word2, word);
 			strcat(soundexWord, word);
 			strcpy(soundexNext, soundexWord);
 			strcpy(soundexPrev, soundexWord);
-			max = 8;
-			if(bfndky(soundexTree, soundexWord, &value) ==  0){
+			max = 10;
+			if(bfndky(soundexTree, soundexWord, &value) ==  0)
 				found = 1;
-				gtk_list_store_append(list, &Iter);
-				gtk_list_store_set(list, &Iter, 0, word, -1 );
-			}
 			else
 				binsky(soundexTree, soundexWord, 0);
 			while(max){
@@ -87,7 +70,7 @@ void suggest(char * word, gboolean Tab_pressed){// suggest, dua vao prefix, dung
 	}
 }
 
-void search_suggest(GtkWidget *entry, GdkEvent *event){// gioi han ky tu, chi nhan alphabelt va tab
+void searchSuggest(GtkWidget *entry, GdkEvent *event){
 	GdkEventKey *keyEvent = (GdkEventKey*)event;
 	char word[50];
 	int len;
@@ -113,15 +96,17 @@ void search(GtkWidget *w, gpointer data){
 	GtkWidget *button4 = ((GtkWidget**)data)[3];
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
-	char word[50];
+	char word[50], mean[100000];
 	BTint x;
 
 	strcpy(word, a);
 	if(word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
-		int result = btfind(word, dictionary);
-		if(result == 0)
+		if(btsel(dictionary, word, mean, 100000, &size) == 0){
+			setTextView(mean, GTK_TEXT_VIEW(textView));
+		}
+		else
 			Message(GTK_WIDGET(window1), GTK_MESSAGE_ERROR, "Error!","Word not found!");
 	}
 
@@ -132,12 +117,12 @@ void search(GtkWidget *w, gpointer data){
 	if(bfndky(dictionary, word, &x) == 0){
 		for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
 		
-		fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);fclose(fileHistory);
+		fileHistory = fopen("../data/history.dat", "ab");fprintf(fileHistory, "%s\n", word);/*fputs(word, fileHistory);*/fclose(fileHistory);
 
 		fileHistory = fopen("../data/history.dat", "rb");
 		linkedList = new_dllist();int temp = 0;
 		while(fscanf(fileHistory, "%s", wordHistory) != EOF){
-			strcpy(wordTmp[temp++], wordHistory);//g_print("%s\n", wordHistory);
+			strcpy(wordTmp[temp++], wordHistory);
 		}
 		fclose(fileHistory);
 		for(int i = 0; i < temp; i++) dll_append(linkedList, new_jval_s(wordTmp[i]));
@@ -153,18 +138,6 @@ void search(GtkWidget *w, gpointer data){
 		fclose(fileHistory);
 		free_dllist(linkedList);
 	}
-	return;
-}
-
-int btfind(char *word, BTA* file){// dung cho ham search
-	char mean[100000];
-
-	if(btsel(file, word, mean, 100000, &size) == 0){
-		setTextView(mean, GTK_TEXT_VIEW(textView));
-		return 1;
-	}
-    else
-    	return 0;
 }
 
 void edit(GtkWidget *w, gpointer data){// ham chuc nang edit
@@ -175,7 +148,7 @@ void edit(GtkWidget *w, gpointer data){// ham chuc nang edit
 	BTint x;
 
 	if(gtk_entry_get_text(GTK_ENTRY(entry1))[0] == 0 || bfndky(dictionary, (char*)gtk_entry_get_text(GTK_ENTRY(entry1)), &x) != 0){
-		Message(window1, GTK_MESSAGE_WARNING, "Warning", "Input is left blank!"); // Message o tren
+		Message(window1, GTK_MESSAGE_WARNING, "Warning", "Input is left blank!");
 		return;
 	}
 
@@ -351,7 +324,7 @@ void searchWord(GtkWidget widget, gpointer window){
 	data[2] = textView;
 	data[3] = button4;
 
-	g_signal_connect(entry_search, "key-press-event", G_CALLBACK(search_suggest), NULL);
+	g_signal_connect(entry_search, "key-press-event", G_CALLBACK(searchSuggest), NULL);
 	g_signal_connect(G_OBJECT(entry_search), "activate", G_CALLBACK(search), data);//khi nhap tu xong an enter thi search
 	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(search), data);
 	g_signal_connect(G_OBJECT(button2), "clicked", G_CALLBACK(close_window), window1);

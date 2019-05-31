@@ -171,6 +171,7 @@ void changePass(){
                 if(strcmp(newpw1, newpw2) != 0){
                     gtk_label_set_text(GTK_LABEL(label1R), "New password not match");
                     gtk_widget_set_name(label1R, "error");
+                    gtk_fixed_move(GTK_FIXED(fixedR), label1R, 0, 0);
                     return;
                 }
                 break;
@@ -178,6 +179,7 @@ void changePass(){
             else{
                 gtk_label_set_text(GTK_LABEL(label1R), "Wrong password");
                 gtk_widget_set_name(label1R, "error");
+                gtk_fixed_move(GTK_FIXED(fixedR), label1R, 0, 0);
                 return;
             }
         }
@@ -185,6 +187,7 @@ void changePass(){
     if(found == 0){
         gtk_label_set_text(GTK_LABEL(label1R), "User not exists");
         gtk_widget_set_name(label1R, "error");
+        gtk_fixed_move(GTK_FIXED(fixedR), label1R, 0, 0);
         return;
     }
     fclose(fileUser);
@@ -575,7 +578,7 @@ void registerChangePass(){
         labelR = gtk_label_new("Register");
         gtk_fixed_put(GTK_FIXED(fixedR), labelR, 120, 30);
 
-        label1R = gtk_label_new("*Compusory");
+        label1R = gtk_label_new("*Compulsory");
         gtk_widget_set_name(label1R, "error");
         gtk_fixed_put(GTK_FIXED(fixedR), label1R, 190, 55);
 
@@ -585,7 +588,7 @@ void registerChangePass(){
         gtk_entry_set_max_length(GTK_ENTRY(entry1R), 50);
         gtk_entry_set_placeholder_text(GTK_ENTRY(entry1R), "Username");
 
-        label2R = gtk_label_new("*Compusory");
+        label2R = gtk_label_new("*Compulsory");
         gtk_widget_set_name(label2R, "error");
         gtk_fixed_put(GTK_FIXED(fixedR), label2R, 190, 95);
 
@@ -595,7 +598,7 @@ void registerChangePass(){
         gtk_entry_set_max_length(GTK_ENTRY(entry2R), 14);
         gtk_entry_set_placeholder_text(GTK_ENTRY(entry2R), "Phone number");
 
-        label3R = gtk_label_new("*Compusory");
+        label3R = gtk_label_new("*Compulsory");
         gtk_widget_set_name(label3R, "error");
         gtk_fixed_put(GTK_FIXED(fixedR), label3R, 190, 135);
 
@@ -605,7 +608,7 @@ void registerChangePass(){
         gtk_entry_set_max_length(GTK_ENTRY(entry3R), 50);
         gtk_entry_set_placeholder_text(GTK_ENTRY(entry3R), "Email");
 
-        label4R = gtk_label_new("*Compusory");
+        label4R = gtk_label_new("*Compulsory");
         gtk_widget_set_name(label4R, "error");
         gtk_fixed_put(GTK_FIXED(fixedR), label4R, 190, 175);
 
@@ -616,7 +619,7 @@ void registerChangePass(){
         gtk_entry_set_placeholder_text(GTK_ENTRY(entry4R), "Password");
         gtk_entry_set_visibility(GTK_ENTRY(entry4R), FALSE);
 
-        label5R = gtk_label_new("*Compusory");
+        label5R = gtk_label_new("*Compulsory");
         gtk_widget_set_name(label5R, "error");
         gtk_fixed_put(GTK_FIXED(fixedR), label5R, 190, 215);
 

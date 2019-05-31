@@ -3,8 +3,8 @@ void library(GtkWidget widget);
 void getLabel(GtkButton *button);
 void initMainLibrary();
 // char word[50];
-GtkWidget *fixed, *fixed2, *scrolling;
-GtkWidget *window1, *scrolling2[100], *button, *buttonArr1[100], /**fixed,*/ /**fixed2,*/ *fixed3, *labelArr[100], *image;
+GtkWidget *fixed1, *fixed2, *scrolling;
+GtkWidget *window1, *scrolling2[100], *button, *buttonArr1[100], *fixed3, *labelArr[100], *image1;
 char mean[100000];
 int count = 0;
 char* x = NULL;
@@ -14,7 +14,7 @@ void removeAll(){
 	char* x = NULL;
 	int size;
     btsel(libraryTree, "", x, 1, &size);
-    if(btseln(libraryTree, word, x, 0, &size) == 0) gtk_container_remove(GTK_CONTAINER(fixed), scrolling);
+    if(btseln(libraryTree, word, x, 0, &size) == 0) gtk_container_remove(GTK_CONTAINER(fixed1), scrolling);
 	btsel(libraryTree, "", x, 1, &size);
     while(btseln(libraryTree, word, x, 0, &size) == 0) bdelky(libraryTree, word);
 }
@@ -63,20 +63,20 @@ void library(GtkWidget widget){
 	gtk_window_set_position(GTK_WINDOW(window1), GTK_WIN_POS_CENTER);
 	gtk_window_set_resizable(GTK_WINDOW(window1), FALSE);
 
-	fixed = gtk_fixed_new();
-	gtk_container_add(GTK_CONTAINER(window1), fixed);
+	fixed1 = gtk_fixed_new();
+	gtk_container_add(GTK_CONTAINER(window1), fixed1);
 
-	if(theme == 1) image = gtk_image_new_from_file("../Img/tsubaki.jpg");//them anh tu file
-    if(theme == 2) image = gtk_image_new_from_file("../Img/tfwb8.jpg");
-	gtk_container_add(GTK_CONTAINER(fixed), image);
+	if(theme == 1) image1 = gtk_image_new_from_file("../Img/tsubaki.jpg");//them anh tu file
+    if(theme == 2) image1 = gtk_image_new_from_file("../Img/tfwb8.jpg");
+	gtk_container_add(GTK_CONTAINER(fixed1), image1);
 
 	button = gtk_button_new_with_label("Remove all");
 	gtk_widget_set_name(button, "buttonRemoveAll");
-	gtk_fixed_put(GTK_FIXED(fixed), button, 20, 20);
+	gtk_fixed_put(GTK_FIXED(fixed1), button, 20, 20);
 	gtk_widget_set_size_request(button, 80, 80);
 
 	scrolling = gtk_scrolled_window_new(NULL, NULL);
-	gtk_fixed_put(GTK_FIXED(fixed), scrolling, 350, 20);
+	gtk_fixed_put(GTK_FIXED(fixed1), scrolling, 350, 20);
 	gtk_widget_set_size_request(scrolling, 250, 450);
 
 	fixed2 = gtk_fixed_new();

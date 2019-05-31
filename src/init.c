@@ -24,7 +24,7 @@ void init(){
 		add_code(cls[i], i - 1);
 }
 
-char* soundex(const char *s){
+char *soundex(const char *s){
 	static char out[5];
 	int c, prev, i;
 
@@ -51,11 +51,10 @@ void initSoundex(char *filename){
 	FILE *datafile;
 	datafile = fopen(filename, "r");
 	char word[WORD_MAX], mean[MEAN_MAX];
-    int line;
+
     soundexTree = btcrt("../data/soundex.dat", 0, 0);
-    while (fscanf(datafile, "%[^@]", word) == 1){
+    while(fscanf(datafile, "%[^@]", word) == 1){
 		fgets(mean, MEAN_MAX, datafile);
-        line++;
 		char wordTmp[100];
         strcpy(wordTmp, soundex(word));
         strcat(wordTmp, word);
@@ -70,11 +69,9 @@ void initDic(char *filename){
 	datafile = fopen(filename, "r");
 
     char word[WORD_MAX], mean[MEAN_MAX];
-    int line;
 
-    while (fscanf(datafile, "%[^@]", word) == 1){
+    while(fscanf(datafile, "%[^@]", word) == 1){
         fgets(mean, MEAN_MAX, datafile);
-        line++;
         separate_mean(mean);
         btins(dictionary, word, mean, strlen(mean) + 1);
     }

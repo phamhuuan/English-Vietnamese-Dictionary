@@ -1,5 +1,3 @@
-void phamhuuan(GtkWidget widget, gpointer window);
-void doanngocchien(GtkWidget widget, gpointer window);
 void team(GtkWidget widget, gpointer window);
 
 void team(GtkWidget widget, gpointer window){
@@ -26,7 +24,6 @@ void team(GtkWidget widget, gpointer window){
 	image1 = gtk_image_new_from_file("../Img/an.jpg");
 	gtk_widget_set_tooltip_text(button1, "Click here see more");
 	gtk_container_add(GTK_CONTAINER(button1), image1);
-	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(phamhuuan), NULL);
 	label1 = gtk_label_new(NULL);
 	gtk_fixed_put(GTK_FIXED(fixed), label1, 120, 50);
 	gtk_label_set_markup(GTK_LABEL(label1), info1);
@@ -37,7 +34,6 @@ void team(GtkWidget widget, gpointer window){
 	image2 = gtk_image_new_from_file("../Img/chien.jpg");
 	gtk_widget_set_tooltip_text(button2, "Click here see more");
 	gtk_container_add(GTK_CONTAINER(button2), image2);
-	g_signal_connect(G_OBJECT(button2), "clicked", G_CALLBACK(doanngocchien), NULL);
 	label2 = gtk_label_new(NULL);
 	gtk_fixed_put(GTK_FIXED(fixed), label2, 120, 150);
 	gtk_label_set_markup(GTK_LABEL(label2), info2);
@@ -47,24 +43,4 @@ void team(GtkWidget widget, gpointer window){
 	gtk_fixed_put(GTK_FIXED(fixed), image3, 350, 0);
 
 	gtk_widget_show_all(window1);
-}
-
-void phamhuuan(GtkWidget widget, gpointer window){
-	about_dialog = gtk_about_dialog_new();
-	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about_dialog), "Phạm Hữu An");
-	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about_dialog), "Mã số sinh viên: 20176676");
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about_dialog), "Nhóm 74");
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(about_dialog), NULL);
-	gtk_dialog_run(GTK_DIALOG(about_dialog));
-	gtk_widget_destroy(about_dialog);
-}
-
-void doanngocchien(GtkWidget widget, gpointer window){
-	about_dialog = gtk_about_dialog_new();
-	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about_dialog), "Đoàn Ngọc Chiến");
-	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about_dialog), "Mã số sinh viên: 20176701");
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about_dialog), "Nhóm 74");
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(about_dialog), NULL);
-	gtk_dialog_run(GTK_DIALOG(about_dialog));
-	gtk_widget_destroy(about_dialog);
 }

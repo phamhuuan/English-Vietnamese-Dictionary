@@ -61,23 +61,23 @@ USER *user, userTmp;
 void activate(GtkApplication *app, gpointer user_data);
 
 void activate(GtkApplication *app, gpointer user_data){
-    init();
+    init();//khoi tao soundex
 	fileKeepLogIn = fopen("../data/keepLogin.dat", "rb");
-	fscanf(fileKeepLogIn, "%d", &keepLogin);
+	fscanf(fileKeepLogIn, "%d", &keepLogin);//kiem tra keep login
     fclose(fileKeepLogIn);
-    fileIsLogIn = fopen("../data/isLogin.dat", "rb");
+    fileIsLogIn = fopen("../data/isLogin.dat", "rb");//kiem tra da login chua
 	fscanf(fileIsLogIn, "%d %s", &isLogin, username);
 	fclose(fileIsLogIn);
 	btinit();
-	dictionary = btopn("../data/evdic.dat", 0, 1);//cho phep update va share
-	soundexTree = btopn("../data/soundex.dat", 0, 1);
-	if(dictionary == NULL){
+	dictionary = btopn("../data/evdic.dat", 0, 1);//cho phep update va share//mo file dictionary
+	soundexTree = btopn("../data/soundex.dat", 0, 1);//mo file soundex
+	if(dictionary == NULL){//neu k mo dc thi tao lai
 		g_print("Waiting for creating dictionary data...\n");
 		initDic("../data/AnhViet.txt");
 		dictionary = btopn("../data/evdic.dat", 0, 1);
 		g_print("Done!\n");
 	}
-	if(soundexTree == NULL){
+	if(soundexTree == NULL){//neu k mo dc thi tao lai
 		g_print("Waiting for creating soundex data...\n");
 		initSoundex("../data/AnhViet.txt");
 		soundexTree = btopn("../data/soundex.dat", 0, 1);
@@ -91,7 +91,7 @@ void activate(GtkApplication *app, gpointer user_data){
 	GtkWidget *image2, *fixed;
 	GtkWidget *button1, *button2, *button3, *button4, *button5, *button6, *button7, *button8, *button9, *button10, *button11;
 
-	al_install_audio();
+	al_install_audio();//cai dat am thanh
 	al_init_acodec_addon();
 	al_reserve_samples(1);
 	if(theme == 1) sample = al_load_sample("../Img/Orange7.wav");
@@ -223,7 +223,7 @@ int main(int argc, char **argv){
   GtkApplication *app;
   int status;
 
-  app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+  app = gtk_application_new ("ahihi.com", G_APPLICATION_FLAGS_NONE);
   g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
   status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);

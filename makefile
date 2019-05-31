@@ -3,4 +3,4 @@ all:
 clean:
 	cd src && make clean
 run:
-	cd src && ./main
+	cd src && ./main.sh

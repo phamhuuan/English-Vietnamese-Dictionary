@@ -2,33 +2,34 @@ GtkWidget *fixed /*, *image*/;
 GtkWidget *button1,*window1,*label,*button2,*button3,*button4,*button5,*label2;
 
 void history();
-void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need);
+void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer data);
 void suggestHistory(char *word, gboolean Tab_pressed);
 void delete(GtkWidget *w, gpointer data);
 void deleteAll(GtkWidget *w, gpointer data);
 void showAll(GtkWidget *w, gpointer data);
 void searchHistory(GtkWidget *w, gpointer data);
 
-void suggestHistory(char *word, gboolean Tab_pressed){// suggest, dua vao prefix, dung JRB to list ~
+void suggestHistory(char *word, gboolean Tab_pressed){
 	char nextword[100];
-	JRB nextWordArray = make_jrb();
+	GtkTreeIter Iter;
 	strcpy(nextword, word);
 	gtk_list_store_clear(GTK_LIST_STORE(list));
     if(word[0] != '\0'){int j;
         fileHistory = fopen("../data/history.dat", "rb");
-        while(fscanf(fileHistory, "%s", wordHistory) != EOF){//g_print("%s\n", wordHistory);
+        while(fscanf(fileHistory, "%s", wordHistory) != EOF){
             for(j = 0; j < strlen(wordHistory); j++) if(wordHistory[j] == '_') wordHistory[j] = ' ';
-            jrb_insert_str(nextWordArray, strdup(wordHistory), JNULL);
+			gtk_list_store_append(list, &Iter);
+			gtk_list_store_set(list, &Iter, 0, wordHistory, -1);
         }
-		jrb_to_list(nextWordArray);
     }
-	jrb_free_tree(nextWordArray);
 }
 
-void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer No_need){// gioi han ky tu, chi nhan alphabelt va tab
+void historySuggest(GtkWidget * entry, GdkEvent * event, gpointer data){// gioi han ky tu, chi nhan alphabelt va tab
 	GdkEventKey *keyEvent = (GdkEventKey*)event;
+	GtkWidget *textView = ((GtkWidget**)data)[2];
 	char word[50];//text entry nhap nhieu qua se bi loi vi tran bo nho cua bien word trong ham nay va newWord, prevWord o ham suggestHistory
 	int len;
+	setTextView("", GTK_TEXT_VIEW(textView));
 	strcpy(word, gtk_entry_get_text(GTK_ENTRY(entry_search)));
 	if(keyEvent->keyval == GDK_KEY_Tab) suggestHistory(word, TRUE);
 	else{
@@ -94,18 +95,17 @@ void showAll(GtkWidget *w, gpointer data){
 
 	fileHistory = fopen("../data/history.dat", "rb");
 	int temp = 0;
-	// linkedList = new_dllist();int temp = 0;
 	while(fscanf(fileHistory, "%s", wordHistory) != EOF){
 		for(int i = 0; i < strlen(wordHistory); i++) if(wordHistory[i] == '_') wordHistory[i] = ' ';
 		strcpy(wordTmp[temp++], wordHistory);
 	}
 	fclose(fileHistory);
 	for(int i = temp - 1; i >= 0; i--){
-		strcat(showAllResult, wordTmp[i]);//g_print("1. %s\n", showAllResult);
+		strcat(showAllResult, wordTmp[i]);
 		strcat(showAllResult, "\n");
 	}
 
-	setTextView(showAllResult, GTK_TEXT_VIEW (textView));
+	setTextView(showAllResult, GTK_TEXT_VIEW(textView));
 }
 
 void searchHistory(GtkWidget *w, gpointer data){
@@ -114,17 +114,21 @@ void searchHistory(GtkWidget *w, gpointer data){
 
 	a = gtk_entry_get_text(GTK_ENTRY(entry1));
 	gtk_label_set_text(GTK_LABEL(label2), "Meaning:");
-	char word[50], tmp[50];
+	char word[50], tmp[50], mean[100000];
 	int check = 0;
 
 	strcpy(word, a);
 	if(word[0] == '\0')
 		Message(GTK_WIDGET(window1), GTK_MESSAGE_WARNING, "Warning!", "Input is left blank!");
 	else{
+		for(int i = 0; i < strlen(word); i++) if(word[i] == ' ') word[i] = '_';
 		fileHistory = fopen("../data/history.dat", "rb");
 		while(fscanf(fileHistory, "%s", tmp) != EOF){
 			if(strcmp(tmp, word) == 0){
-				btfind(word, dictionary);
+				for(int i = 0; i < strlen(word); i++) if(word[i] == '_') word[i] = ' ';
+				if(btsel(dictionary, word, mean, 100000, &size) == 0){
+					setTextView(mean, GTK_TEXT_VIEW(textView));
+				}
 				check = 1;
 			}
 		}	
@@ -220,7 +224,7 @@ void history(){
 	data[2] = textView;
 	data[3] = button4;
 
-	g_signal_connect(entry_search, "key-press-event", G_CALLBACK(historySuggest), NULL);
+	g_signal_connect(entry_search, "key-press-event", G_CALLBACK(historySuggest), data);
 	g_signal_connect(G_OBJECT(entry_search), "activate", G_CALLBACK(searchHistory), data);//khi nhap tu xong an enter thi search
 	g_signal_connect(G_OBJECT(button1), "clicked", G_CALLBACK(searchHistory), data);
 	g_signal_connect(G_OBJECT(button2), "clicked", G_CALLBACK(close_window), window1);

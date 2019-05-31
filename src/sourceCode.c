@@ -5,7 +5,6 @@ void on_changed(GtkComboBox *widget, gpointer data);
 
 void on_changed(GtkComboBox *widget, gpointer data){
     GtkComboBox *combo_box = widget;
-    // GtkWidget *view = ((GtkWidget**)data)[0];
 
     gchar fileName[50];
     setTextView("", GTK_TEXT_VIEW(view));
@@ -13,8 +12,7 @@ void on_changed(GtkComboBox *widget, gpointer data){
     if(gtk_combo_box_get_active(combo_box) != 0){
         gchar *distro = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_box));
         if(strcmp(distro, "README.md") == 0){
-            strcpy(fileName, "../");
-            strcat(fileName, distro);
+            strcat(fileName, "../README.md");
         }
         else strcpy(fileName, distro);
         FILE *f = fopen(fileName, "r");
@@ -22,7 +20,6 @@ void on_changed(GtkComboBox *widget, gpointer data){
         while((c = getc(f)) != EOF){
             buffer[j++] = c;
         }buffer[j] = '\0';
-        g_print("%lld\n", j);
         fclose(f);
         setTextView(buffer, GTK_TEXT_VIEW(view));
         g_free(distro);
